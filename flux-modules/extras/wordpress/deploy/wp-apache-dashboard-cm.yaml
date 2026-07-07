@@ -47,7 +47,7 @@ data:
       "panels": [
         {
           "datasource": {
-            "uid": "${prometheus_datasource}"
+            "uid": "$${prometheus_datasource}"
           },
           "fieldConfig": {
             "defaults": {
@@ -109,7 +109,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "uid": "${prometheus_datasource}"
+                "uid": "$${prometheus_datasource}"
               },
               "expr": "apache_uptime_seconds_total{job=~\"$job\", instance=~\"$instance\"}",
               "format": "time_series",
@@ -124,7 +124,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus_datasource}"
+            "uid": "$${prometheus_datasource}"
           },
           "fieldConfig": {
             "defaults": {
@@ -190,7 +190,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${prometheus_datasource}"
+                "uid": "$${prometheus_datasource}"
               },
               "exemplar": false,
               "expr": "apache_info{job=~\"$job\", instance=~\"$instance\"}",
@@ -209,7 +209,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus_datasource}"
+            "uid": "$${prometheus_datasource}"
           },
           "fieldConfig": {
             "defaults": {
@@ -277,7 +277,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${prometheus_datasource}"
+                "uid": "$${prometheus_datasource}"
               },
               "exemplar": true,
               "expr": "apache_up{job=~\"$job\", instance=~\"$instance\"}",
@@ -294,7 +294,7 @@ data:
         },
         {
           "datasource": {
-            "uid": "${prometheus_datasource}"
+            "uid": "$${prometheus_datasource}"
           },
           "description": "",
           "fieldConfig": {
@@ -403,7 +403,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${prometheus_datasource}"
+                "uid": "$${prometheus_datasource}"
               },
               "exemplar": false,
               "expr": "rate(apache_accesses_total{job=~\"$job\", instance=~\"$instance\"}[$__rate_interval])",
@@ -417,7 +417,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${prometheus_datasource}"
+                "uid": "$${prometheus_datasource}"
               },
               "exemplar": false,
               "expr": "rate(apache_sent_kilobytes_total{job=~\"$job\", instance=~\"$instance\"}[$__rate_interval]) * 1000",
@@ -432,7 +432,7 @@ data:
         },
         {
           "datasource": {
-            "uid": "${prometheus_datasource}"
+            "uid": "$${prometheus_datasource}"
           },
           "fieldConfig": {
             "defaults": {
@@ -516,7 +516,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${prometheus_datasource}"
+                "uid": "$${prometheus_datasource}"
               },
               "exemplar": false,
               "expr": "increase(apache_duration_ms_total{job=~\"$job\", instance=~\"$instance\"}[$__rate_interval])/increase(apache_accesses_total{job=~\"$job\", instance=~\"$instance\"}[$__rate_interval])",
@@ -533,7 +533,7 @@ data:
         },
         {
           "datasource": {
-            "uid": "${prometheus_datasource}"
+            "uid": "$${prometheus_datasource}"
           },
           "fieldConfig": {
             "defaults": {
@@ -619,7 +619,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "uid": "${prometheus_datasource}"
+                "uid": "$${prometheus_datasource}"
               },
               "expr": "apache_scoreboard{job=~\"$job\", instance=~\"$instance\"}",
               "format": "time_series",
@@ -634,7 +634,7 @@ data:
         },
         {
           "datasource": {
-            "uid": "${prometheus_datasource}"
+            "uid": "$${prometheus_datasource}"
           },
           "fieldConfig": {
             "defaults": {
@@ -718,7 +718,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "uid": "${prometheus_datasource}"
+                "uid": "$${prometheus_datasource}"
               },
               "expr": "apache_workers{job=~\"$job\", instance=~\"$instance\"}\n",
               "format": "time_series",
@@ -733,7 +733,7 @@ data:
         },
         {
           "datasource": {
-            "uid": "${prometheus_datasource}"
+            "uid": "$${prometheus_datasource}"
           },
           "fieldConfig": {
             "defaults": {
@@ -818,7 +818,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "uid": "${prometheus_datasource}"
+                "uid": "$${prometheus_datasource}"
               },
               "expr": "apache_cpuload{job=~\"$job\", instance=~\"$instance\"}",
               "format": "time_series",
