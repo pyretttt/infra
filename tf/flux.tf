@@ -22,13 +22,13 @@ resource "kubernetes_secret_v1" "git_auth" {
 }
 
 // Install the Flux Operator.
-removed {
-  from = helm_release.flux_operator
+# removed {
+#   from = helm_release.flux_operator
 
-  lifecycle {
-    destroy = false
-  }
-}
+#   lifecycle {
+#     destroy = false
+#   }
+# }
 
 resource "null_resource" "flux_operator_bootstrap" {
   triggers = {
@@ -94,7 +94,7 @@ resource "kubernetes_manifest" "flux_instance" {
         "version" = var.flux_version
       }
       "sync" = {
-        "interval" = "1m"
+        "interval" = "5m"
         "kind" = "GitRepository"
         "path" = var.git_path
         "pullSecret" = "flux-system"

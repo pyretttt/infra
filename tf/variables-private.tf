@@ -1,17 +1,17 @@
 variable "compartment_id" {
   type        = string
   description = "The compartment to create the resources in"
-  default     = "ocid1.tenancy.oc1..aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  nullable    = false
 }
 variable "region" {
   type        = string
   description = "The region to provision the resources in"
-  default     = "eu-frankfurt-1"
+  default     = "me-dubai-1"
 }
 variable "ssh_public_key" {
   type        = string
   description = "The SSH public key to use for connecting to the worker nodes"
-  default     = "ssh-rsa AAAA........"
+  nullable    = false
 }
 variable "bastion_allowed_ips" {
   type        = list(string)
@@ -21,7 +21,7 @@ variable "bastion_allowed_ips" {
 variable "ad_list" {
   type        = list
   description = "List of length 2 with the names of availability regions to use"
-  default     = ["fJnH:EU-FRANKFURT-1-AD-1", "fJnH:EU-FRANKFURT-1-AD-2"]
+  default     = ["QZUh:ME-DUBAI-1-AD-1", "QZUh:ME-DUBAI-1-AD-1"]
 }
 variable "git_token" {
   description = "Git PAT"
@@ -31,7 +31,6 @@ variable "git_token" {
 }
 variable "git_url" {
   description = "Git repository URL"
-  default     = "https://github.com/OWNER/REPO"
   type        = string
   nullable    = false
 }

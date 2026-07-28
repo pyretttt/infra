@@ -1,6 +1,6 @@
 module "vcn" {
   source  = "oracle-terraform-modules/vcn/oci"
-  version = ">=3.5.0"
+  version = ">=3.6.0"
 
   compartment_id = var.compartment_id
   region         = var.region
@@ -9,8 +9,8 @@ module "vcn" {
   local_peering_gateways       = null
   nat_gateway_route_rules      = null
 
-  vcn_name      = "free-k8s-vcn"
-  vcn_dns_label = "freek8svcn"
+  vcn_name      = "k8s-vcn"
+  vcn_dns_label = "k8svcn"
   vcn_cidrs     = ["10.0.0.0/16"]
 
   create_internet_gateway = true
@@ -18,21 +18,21 @@ module "vcn" {
   create_service_gateway  = true
 }
 
-removed {
-  from = oci_core_security_list.private_subnet_sl
+# removed {
+#   from = oci_core_security_list.private_subnet_sl
 
-  lifecycle {
-    destroy = false
-  }
-}
+#   lifecycle {
+#     destroy = false
+#   }
+# }
 
-removed {
-  from = oci_core_security_list.public_subnet_sl
+# removed {
+#   from = oci_core_security_list.public_subnet_sl
 
-  lifecycle {
-    destroy = false
-  }
-}
+#   lifecycle {
+#     destroy = false
+#   }
+# }
 
 resource "oci_core_subnet" "vcn_private_subnet" {
   compartment_id = var.compartment_id
@@ -40,7 +40,7 @@ resource "oci_core_subnet" "vcn_private_subnet" {
   cidr_block     = "10.0.1.0/24"
 
   route_table_id             = module.vcn.nat_route_id
-  display_name               = "free-k8s-private-subnet"
+  display_name               = "k8s-private-subnet"
   prohibit_public_ip_on_vnic = true
 
   lifecycle {
@@ -54,7 +54,7 @@ resource "oci_core_subnet" "vcn_public_subnet" {
   cidr_block     = "10.0.0.0/24"
 
   route_table_id = module.vcn.ig_route_id
-  display_name   = "free-k8s-public-subnet"
+  display_name   = "k8s-public-subnet"
 
   lifecycle {
     ignore_changes = [security_list_ids]
@@ -98,13 +98,13 @@ resource "oci_core_network_security_group_security_rule" "nginx_ingress_network_
   }
 }
 
-removed {
-  from = local_file.gateway_nlb_patch
+# removed {
+#   from = local_file.gateway_nlb_patch
 
-  lifecycle {
-    destroy = false
-  }
-}
+#   lifecycle {
+#     destroy = false
+#   }
+# }
 
 resource "null_resource" "gateway_nlb_patch" {
   triggers = {

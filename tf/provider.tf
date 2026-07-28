@@ -17,6 +17,13 @@ terraform {
       version = ">= 3.2"
     }
   }
+
+  backend "oci" {
+    namespace = "ax871f0napcp"
+    bucket    = "tofu-states"
+    key       = "infra/tofu.tfstate"
+  }
+
 }
 
 provider "kubernetes" {

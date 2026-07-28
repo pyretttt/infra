@@ -22,16 +22,15 @@ variable "arm_pool_images" {
   type        = list(string)
   description = "ready images for ARM pools"
   default = [
-    # "Oracle-Linux-8.10-aarch64-2026.04.30-3-OKE-1.36.0-1462",
-    "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaurf2m4ofluyf3qwvhc34jr3mhzqz4utyz2hgtmkzlujvqm7xzmka",
-    # "Oracle-Linux-8.10-aarch64-2026.04.30-3-OKE-1.36.0-1462",
-    "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaurf2m4ofluyf3qwvhc34jr3mhzqz4utyz2hgtmkzlujvqm7xzmka",
-  ]
+    # Linux 7.9
+    "ocid1.image.oc1.me-dubai-1.aaaaaaaarqcig5soskrxcccj7u4l5uzbtcdl37kgksni746t6yoiwtinoasq",
+    "ocid1.image.oc1.me-dubai-1.aaaaaaaarqcig5soskrxcccj7u4l5uzbtcdl37kgksni746t6yoiwtinoasq",
+ ]
 }
 variable "enable_wireguard" {
   type        = bool
   description = "Weather or not create wireguard security group allow rules."
-  default     = true
+  default     = false
 }
 
 variable "git_path" {

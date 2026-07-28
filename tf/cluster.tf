@@ -1,7 +1,7 @@
 resource "oci_containerengine_cluster" "k8s_cluster" {
   compartment_id     = var.compartment_id
   kubernetes_version = var.k8s_version
-  name               = "free-k8s-cluster"
+  name               = "k8s-cluster"
   vcn_id             = module.vcn.vcn_id
 
   endpoint_config {
@@ -31,13 +31,13 @@ data "oci_containerengine_cluster_kube_config" "k8s_cluster_kube_config" {
   cluster_id = oci_containerengine_cluster.k8s_cluster.id
 }
 
-removed {
-  from = local_file.kube_config
+# removed {
+#   from = local_file.kube_config
 
-  lifecycle {
-    destroy = false
-  }
-}
+#   lifecycle {
+#     destroy = false
+#   }
+# }
 
 resource "null_resource" "kube_config" {
   depends_on = [oci_containerengine_node_pool.k8s_node_pool]
@@ -64,13 +64,13 @@ EOF
   }
 }
 
-removed {
-  from = local_file.cilium_release
+# removed {
+#   from = local_file.cilium_release
 
-  lifecycle {
-    destroy = false
-  }
-}
+#   lifecycle {
+#     destroy = false
+#   }
+# }
 
 resource "null_resource" "cilium_release" {
   triggers = {
@@ -104,7 +104,7 @@ resource "oci_containerengine_node_pool" "k8s_node_pool" {
   cluster_id         = oci_containerengine_cluster.k8s_cluster.id
   compartment_id     = var.compartment_id
   kubernetes_version = var.k8s_version
-  name               = "free-k8s-node-pool-${count.index}"
+  name               = "k8s-node-pool-${count.index}"
 
   depends_on = [oci_core_volume.arm_instance_volume, oci_identity_policy.k8s_instance_policy]
 
@@ -119,8 +119,8 @@ resource "oci_containerengine_node_pool" "k8s_node_pool" {
   node_shape = "VM.Standard.A1.Flex"
 
   node_shape_config {
-    memory_in_gbs = 12
-    ocpus         = 2
+    memory_in_gbs = 6
+    ocpus         = 1
   }
 
   node_source_details {
@@ -134,7 +134,7 @@ resource "oci_containerengine_node_pool" "k8s_node_pool" {
 
   initial_node_labels {
     key   = "name"
-    value = "free-k8s-cluster-pool-${count.index}"
+    value = "k8s-cluster-pool-${count.index}"
   }
 
   ssh_public_key = var.ssh_public_key
@@ -146,7 +146,7 @@ resource "oci_core_volume" "arm_instance_volume" {
 
   availability_domain = var.ad_list[count.index]
   size_in_gbs         = var.arm_pool_instance_disk_size_in_gb
-  freeform_tags       = { "free-k8s-index" = count.index }
+  freeform_tags       = { "k8s-index" = count.index }
 }
 
 resource "oci_identity_dynamic_group" "k8s_instances" {
