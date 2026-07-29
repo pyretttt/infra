@@ -18,22 +18,6 @@ module "vcn" {
   create_service_gateway  = true
 }
 
-# removed {
-#   from = oci_core_security_list.private_subnet_sl
-
-#   lifecycle {
-#     destroy = false
-#   }
-# }
-
-# removed {
-#   from = oci_core_security_list.public_subnet_sl
-
-#   lifecycle {
-#     destroy = false
-#   }
-# }
-
 resource "oci_core_subnet" "vcn_private_subnet" {
   compartment_id = var.compartment_id
   vcn_id         = module.vcn.vcn_id
@@ -97,14 +81,6 @@ resource "oci_core_network_security_group_security_rule" "nginx_ingress_network_
     }
   }
 }
-
-# removed {
-#   from = local_file.gateway_nlb_patch
-
-#   lifecycle {
-#     destroy = false
-#   }
-# }
 
 resource "null_resource" "gateway_nlb_patch" {
   triggers = {

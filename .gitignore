@@ -1,2 +1,3 @@
 tf/.terraform
+tofu/.terraform
 *.auto.tfvars

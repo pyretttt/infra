@@ -1,7 +1,9 @@
 // Create a Kubernetes secret with the Git credentials
 // if a Git token is provided.
 resource "kubernetes_secret_v1" "git_auth" {
-  count      = var.git_token != "" ? 1 : 0
+  count      = var.git_token != null && var.git_token != "" ? 1 : 0
+
+  depends_on = [null_resource.kube_config]
 
   metadata {
     name      = "flux-system"
@@ -37,10 +39,14 @@ resource "null_resource" "flux_operator_bootstrap" {
     repository = "oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator"
   }
 
+  depends_on = [null_resource.kube_config]
+
   provisioner "local-exec" {
     working_dir = path.module
     command     = <<-EOT
       set -eu
+
+      export KUBECONFIG=.kube.config
 
       if ! command -v helm >/dev/null 2>&1; then
         echo "helm CLI is required to bootstrap flux-operator" >&2
