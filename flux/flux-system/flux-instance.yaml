@@ -23,7 +23,7 @@ spec:
     tenantDefaultServiceAccount: default
   sync:
     kind: GitRepository
-    url: "ssh://git@github.com/YOUR_USER/YOUR_REPO"
+    url: "ssh://git@github.com/pyretttt/infra"
     ref: "refs/heads/main"
     path: "flux/"
     pullSecret: "flux-system"

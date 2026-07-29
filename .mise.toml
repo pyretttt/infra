@@ -1,0 +1,7 @@
+[tools]
+flux2 = "latest"
+helm = "latest"
+opentofu = "latest"
+sops = "latest"
+terraform = "latest"
+
