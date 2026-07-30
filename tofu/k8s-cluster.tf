@@ -112,10 +112,6 @@ resource "oci_containerengine_node_pool" "k8s_node_pool" {
     source_type = "image"
   }
 
-  node_metadata = {
-    user_data = filebase64("${path.module}/setup_bv.sh")
-  }
-
   initial_node_labels {
     key   = "name"
     value = "k8s-cluster-pool-${count.index}"
@@ -139,6 +135,44 @@ resource "oci_core_volume" "arm_instance_volume" {
   availability_domain = var.ad_list[count.index]
   size_in_gbs         = var.arm_pool_instance_disk_size_in_gb
   freeform_tags       = { "k8s-index" = count.index }
+}
+
+locals {
+  storage_access_volumes = [
+    for i, vol in oci_core_volume.arm_instance_volume : {
+      index   = i
+      ocid    = vol.id
+      size_gb = vol.size_in_gbs
+      zone    = element(split(":", vol.availability_domain), length(split(":", vol.availability_domain)) - 1)
+    }
+  ]
+}
+
+resource "null_resource" "storage_access" {
+  triggers = {
+    content_sha = sha256(templatefile("storage-access.yaml.tftpl", {
+      volumes = local.storage_access_volumes
+    }))
+  }
+
+  provisioner "local-exec" {
+    working_dir = path.module
+    command     = <<-EOT
+      set -eu
+
+      if [ -e ../flux-modules/kube-system-extra/storage-access.yaml ]; then
+        echo "../flux-modules/kube-system-extra/storage-access.yaml already exists, leaving it unchanged"
+        exit 0
+      fi
+
+      cat > ../flux-modules/kube-system-extra/storage-access.yaml <<'EOF'
+${templatefile("storage-access.yaml.tftpl", {
+  volumes = local.storage_access_volumes
+})}
+EOF
+      chmod 0640 ../flux-modules/kube-system-extra/storage-access.yaml
+    EOT
+  }
 }
 
 resource "oci_identity_dynamic_group" "k8s_instances" {

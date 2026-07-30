@@ -5,3 +5,11 @@ output "k8s-cluster-id" {
 output "nginx-ingress-secgroup-ocid" {
   value = oci_core_network_security_group.nginx_ingress_network_security_group.id
 }
+
+output "arm-instance-volume-ocids" {
+  value = oci_core_volume.arm_instance_volume[*].id
+}
+
+output "arm-instance-volume-ocids" {
+  value = oci_core_volume.arm_instance_volume[*].id
+}

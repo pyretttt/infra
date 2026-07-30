@@ -5,7 +5,7 @@ opentofu = "latest"
 sops = "latest"
 terraform = "latest"
 
-[tasks.oci-provision]
+[tasks."oci-provision"]
 description = "creates oci k8s free infrastructure"
 dir = "tofu"
 run = """

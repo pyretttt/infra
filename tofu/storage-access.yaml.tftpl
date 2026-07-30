@@ -1,0 +1,45 @@
+# AUTO-GENERATED from Terraform. Do not edit manually.
+#
+%{ for vol in volumes ~}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: main-ad${vol.index + 1}
+  annotations:
+    pv.kubernetes.io/provisioned-by: blockvolume.csi.oraclecloud.com
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: ${vol.size_gb}Gi
+  csi:
+    driver: blockvolume.csi.oraclecloud.com
+    fsType: ext4
+    volumeHandle: ${vol.ocid}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: topology.kubernetes.io/zone
+              operator: In
+              values:
+                - ${vol.zone}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: oci-bv
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: main-ad${vol.index + 1}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: ${vol.size_gb}Gi
+  storageClassName: oci-bv
+  volumeMode: Filesystem
+  volumeName: main-ad${vol.index + 1}
+%{ endfor ~}

@@ -1,3 +1,4 @@
 tf/.terraform
 tofu/.terraform
 *.auto.tfvars
+teardown.sh
