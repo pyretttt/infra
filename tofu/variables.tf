@@ -1,7 +1,7 @@
 variable "k8s_version" {
   type        = string
   description = "k8s version"
-  default     = "v1.36.0"
+  default     = "v1.36.1"
 }
 variable "arm_pool_count" {
   type        = number

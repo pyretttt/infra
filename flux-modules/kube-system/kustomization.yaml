@@ -12,7 +12,6 @@ resources:
   - storageclass.yaml
   - vpa-helmrepo.yaml
   - vpa-helmrelease.yaml
-  - ../kube-system-extra/kustomization-kube-system-extra.yaml
 
 patches:
   - path: gateway-nlb-patch.yaml

@@ -9,7 +9,3 @@ output "nginx-ingress-secgroup-ocid" {
 output "arm-instance-volume-ocids" {
   value = oci_core_volume.arm_instance_volume[*].id
 }
-
-output "arm-instance-volume-ocids" {
-  value = oci_core_volume.arm_instance_volume[*].id
-}
