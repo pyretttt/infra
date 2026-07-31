@@ -22,8 +22,9 @@ variable "arm_pool_images" {
   type        = list(string)
   description = "ready images for ARM pools"
   default = [
-    # Linux 7.9
-    "ocid1.image.oc1.me-dubai-1.aaaaaaaarqcig5soskrxcccj7u4l5uzbtcdl37kgksni746t6yoiwtinoasq",
+    # https://docs.oracle.com/en-us/iaas/images/oke-worker-node-oracle-linux-8x/oracle-linux-8.10-aarch64-2026.06.15-0-oke-1.36.1-1505.htm
+    # oracle-linux-8.10-aarch64-2026.06.15-0-oke-1.36.1-1505
+    "ocid1.image.oc1.me-dubai-1.aaaaaaaauhjz7i3pp2u5aamneztzlb7r7qo2rij6gi4u63azivv7oqoppjmq",
  ]
 }
 variable "enable_wireguard" {

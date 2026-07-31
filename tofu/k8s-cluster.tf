@@ -108,7 +108,7 @@ resource "oci_containerengine_node_pool" "k8s_node_pool" {
   }
 
   node_source_details {
-    image_id    = var.arm_pool_images[count.index]
+    image_id    = var.arm_pool_images[0]
     source_type = "image"
   }
 
