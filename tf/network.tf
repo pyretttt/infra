@@ -18,20 +18,25 @@ module "vcn" {
   create_service_gateway  = true
 }
 
+# Public subnet (10.0.0.0/24): OKE API endpoint + NLB.
+# This SL protects those control-plane / edge VNICs, not the worker nodes.
 resource "oci_core_security_list" "public_subnet_sl" {
   compartment_id = var.compartment_id
   vcn_id         = module.vcn.vcn_id
 
   display_name = "k8s-public-subnet-sl"
 
+  # API endpoint / NLB must reach workers (kubelet, NodePorts, health checks), OCI
+  # services, and the internet. Covers NLB→31600/31601 and health checks→10256.
   egress_security_rules {
     stateless        = false
     destination      = "0.0.0.0/0"
     destination_type = "CIDR_BLOCK"
     protocol         = "all"
-    description      = "Kubernetes API endpoint to worker nodes, OCI services and the internet"
+    description      = "Kubernetes API endpoint and NLB to worker nodes, OCI services and the internet"
   }
 
+  # Workers call the apiserver on 6443 (auth webhooks, kubectl proxy, CNI, etc.).
   ingress_security_rules {
     stateless   = false
     source      = "10.0.1.0/24"
@@ -44,6 +49,7 @@ resource "oci_core_security_list" "public_subnet_sl" {
     }
   }
 
+  # OKE control-plane channel from workers (kubelet / node agent) to the API endpoint.
   ingress_security_rules {
     stateless   = false
     source      = "10.0.1.0/24"
@@ -56,18 +62,22 @@ resource "oci_core_security_list" "public_subnet_sl" {
     }
   }
 
+  # Public kubectl / CI access to the cluster API. Also used by in-cluster components
+  # that talk to the apiserver via its public IP.
   ingress_security_rules {
     stateless   = false
     source      = "0.0.0.0/0"
     source_type = "CIDR_BLOCK"
     protocol    = "6"
-    description = "External access to the public Kubernetes API endpoint (kubectl, cilium k8sServiceHost)"
+    description = "External access to the public Kubernetes API endpoint (kubectl)"
     tcp_options {
       min = 6443
       max = 6443
     }
   }
 
+  # ICMP fragmentation-needed (type 3 code 4) so Path MTU Discovery works from workers
+  # toward the API endpoint / NLB path.
   ingress_security_rules {
     stateless   = false
     source      = "10.0.1.0/24"
@@ -79,14 +89,44 @@ resource "oci_core_security_list" "public_subnet_sl" {
       code = 4
     }
   }
+
+  # Internet → NLB listener (HTTP).
+  ingress_security_rules {
+    protocol    = "6"
+    source      = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+    stateless   = false
+    description = "Internet to NLB HTTP listener"
+    tcp_options {
+      max = 80
+      min = 80
+    }
+  }
+
+  # Internet → NLB listener (HTTPS, TLS terminated at the in-cluster ingress).
+  ingress_security_rules {
+    protocol    = "6"
+    source      = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+    stateless   = false
+    description = "Internet to NLB HTTPS listener"
+    tcp_options {
+      max = 443
+      min = 443
+    }
+  }
+
 }
 
+# Private subnet (10.0.1.0/24): worker nodes (and their pods via node networking).
 resource "oci_core_security_list" "private_subnet_sl" {
   compartment_id = var.compartment_id
   vcn_id         = module.vcn.vcn_id
 
   display_name = "k8s-private-subnet-sl"
 
+  # Nodes need outbound to the API endpoint, OCI services (via SGW/NAT), image registries,
+  # and general internet for pulls / package updates.
   egress_security_rules {
     stateless        = false
     destination      = "0.0.0.0/0"
@@ -95,6 +135,8 @@ resource "oci_core_security_list" "private_subnet_sl" {
     description      = "Worker nodes to Kubernetes API endpoint, OCI services and the internet"
   }
 
+  # East-west: pod↔pod and node↔node inside the worker subnet. Also allows OCI Bastion
+  # managed sessions that land on worker VNICs in this subnet.
   ingress_security_rules {
     stateless   = false
     source      = "10.0.1.0/24"
@@ -103,8 +145,9 @@ resource "oci_core_security_list" "private_subnet_sl" {
     description = "Pod to pod traffic between worker nodes, and OCI Bastion sessions"
   }
 
-  # The NLB shares the public subnet with the API endpoint, so this single rule covers
-  # both control plane to kubelet (10250) and NLB to node ports (30000-32767, 10256).
+  # Traffic from the public subnet toward workers. Broad TCP allow because both the API
+  # endpoint (kubelet 10250) and the NLB (ingress NodePorts 31600/31601 + health 10256)
+  # source from 10.0.0.0/24.
   ingress_security_rules {
     stateless   = false
     source      = "10.0.0.0/24"
@@ -113,6 +156,8 @@ resource "oci_core_security_list" "private_subnet_sl" {
     description = "Kubernetes API endpoint and network load balancer to worker nodes"
   }
 
+  # ICMP fragmentation-needed from anywhere so PMTUD can correct MTU for node traffic
+  # (including responses toward the internet via NAT).
   ingress_security_rules {
     stateless   = false
     source      = "0.0.0.0/0"
@@ -147,66 +192,84 @@ resource "oci_core_subnet" "vcn_public_subnet" {
   display_name      = "k8s-public-subnet"
 }
 
-resource "oci_core_network_security_group" "nginx_ingress_network_security_group" {
-  compartment_id = var.compartment_id
-  vcn_id         = module.vcn.vcn_id
+# L4 NLB in front of a fixed ingress NodePort Service:
+#   Internet → NLB :80/:443 → worker NodePort 31600/31601 → ingress controller
+# Pin those nodePorts in your kustomize Service; do not let Kubernetes allocate others.
+data "oci_containerengine_node_pool" "k8s_node_pool" {
+  count = var.arm_pool_count
+
+  node_pool_id = oci_containerengine_node_pool.k8s_node_pool[count.index].id
+  depends_on   = [oci_containerengine_node_pool.k8s_node_pool]
 }
 
-resource "oci_core_network_security_group_security_rule" "nginx_ingress_network_security_group_security_rule_443" {
-  network_security_group_id = oci_core_network_security_group.nginx_ingress_network_security_group.id
-  description               = "nginx-ingress"
-  direction                 = "INGRESS"
-  protocol                  = 6
+locals {
+  ingress_http_node_port  = 31600
+  ingress_https_node_port = 31601
+  active_nodes = flatten([
+    for pool in data.oci_containerengine_node_pool.k8s_node_pool : [
+      for node in pool.nodes : node if node.state == "ACTIVE"
+    ]
+  ])
+}
 
-  source      = "0.0.0.0/0"
-  source_type = "CIDR_BLOCK"
-  tcp_options {
-    destination_port_range {
-      max = 443
-      min = 443
-    }
+resource "oci_network_load_balancer_network_load_balancer" "nlb" {
+  compartment_id                 = var.compartment_id
+  display_name                   = "k8s-nlb"
+  subnet_id                      = oci_core_subnet.vcn_public_subnet.id
+  is_private                     = false
+  is_preserve_source_destination = false
+}
+
+resource "oci_network_load_balancer_backend_set" "nlb_http_backend_set" {
+  health_checker {
+    protocol = "TCP"
+    port     = 10256 # kube-proxy healthz (node up), not ingress readiness
   }
+  name                     = "k8s-http-backend-set"
+  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
+  policy                   = "FIVE_TUPLE"
+  is_preserve_source       = false
 }
 
-resource "oci_core_network_security_group_security_rule" "nginx_ingress_network_security_group_security_rule_80" {
-  network_security_group_id = oci_core_network_security_group.nginx_ingress_network_security_group.id
-  description               = "nginx-ingress"
-  direction                 = "INGRESS"
-  protocol                  = 6
-
-  source      = "0.0.0.0/0"
-  source_type = "CIDR_BLOCK"
-  tcp_options {
-    destination_port_range {
-      max = 80
-      min = 80
-    }
+resource "oci_network_load_balancer_backend_set" "nlb_https_backend_set" {
+  health_checker {
+    protocol = "TCP"
+    port     = 10256
   }
+  name                     = "k8s-https-backend-set"
+  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
+  policy                   = "FIVE_TUPLE"
+  is_preserve_source       = false
 }
 
-resource "null_resource" "gateway_nlb_patch" {
-  triggers = {
-    content_sha = sha256(templatefile("gateway-nlb-patch.yaml.tftpl", {
-      nsg_ocid = oci_core_network_security_group.nginx_ingress_network_security_group.id
-    }))
-  }
-
-  provisioner "local-exec" {
-    working_dir = path.module
-    command = <<-EOT
-      set -eu
-
-      if [ -e ../flux-modules/kube-system/gateway-nlb-patch.yaml ]; then
-        echo "../flux-modules/kube-system/gateway-nlb-patch.yaml already exists, leaving it unchanged"
-        exit 0
-      fi
-
-      cat > ../flux-modules/kube-system/gateway-nlb-patch.yaml <<'EOF'
-${templatefile("gateway-nlb-patch.yaml.tftpl", {
-    nsg_ocid = oci_core_network_security_group.nginx_ingress_network_security_group.id
-})}
-EOF
-      chmod 0640 ../flux-modules/kube-system/gateway-nlb-patch.yaml
-    EOT
+resource "oci_network_load_balancer_backend" "nlb_http_backend" {
+  count                    = length(local.active_nodes)
+  backend_set_name         = oci_network_load_balancer_backend_set.nlb_http_backend_set.name
+  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
+  port                     = local.ingress_http_node_port
+  target_id                = local.active_nodes[count.index].id
 }
+
+resource "oci_network_load_balancer_backend" "nlb_https_backend" {
+  count                    = length(local.active_nodes)
+  backend_set_name         = oci_network_load_balancer_backend_set.nlb_https_backend_set.name
+  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
+  port                     = local.ingress_https_node_port
+  target_id                = local.active_nodes[count.index].id
+}
+
+resource "oci_network_load_balancer_listener" "nlb_http_listener" {
+  default_backend_set_name = oci_network_load_balancer_backend_set.nlb_http_backend_set.name
+  name                     = "k8s-nlb-http-listener"
+  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
+  port                     = 80
+  protocol                 = "TCP"
+}
+
+resource "oci_network_load_balancer_listener" "nlb_https_listener" {
+  default_backend_set_name = oci_network_load_balancer_backend_set.nlb_https_backend_set.name
+  name                     = "k8s-nlb-https-listener"
+  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
+  port                     = 443
+  protocol                 = "TCP"
 }

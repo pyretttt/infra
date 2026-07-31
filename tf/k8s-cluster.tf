@@ -52,33 +52,6 @@ EOF
   }
 }
 
-resource "null_resource" "cilium_release" {
-  triggers = {
-    content_sha = sha256(templatefile("cilium-release.yaml.tftpl", {
-      k8s_api_ip = split(":", oci_containerengine_cluster.k8s_cluster.endpoints[0].public_endpoint)[0]
-    }))
-  }
-
-  provisioner "local-exec" {
-    working_dir = path.module
-    command = <<-EOT
-      set -eu
-
-      if [ -e ../flux-modules/cilium/deploy/release.yaml ]; then
-        echo "../flux-modules/cilium/deploy/release.yaml already exists, leaving it unchanged"
-        exit 0
-      fi
-
-      cat > ../flux-modules/cilium/deploy/release.yaml <<'EOF'
-${templatefile("cilium-release.yaml.tftpl", {
-    k8s_api_ip = split(":", oci_containerengine_cluster.k8s_cluster.endpoints[0].public_endpoint)[0]
-})}
-EOF
-      chmod 0640 ../flux-modules/cilium/deploy/release.yaml
-    EOT
-}
-}
-
 data "oci_identity_availability_domains" "ads" {
   compartment_id = var.compartment_id
 }
