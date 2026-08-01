@@ -134,17 +134,17 @@ resource "null_resource" "storage_access" {
     command     = <<-EOT
       set -eu
 
-      if [ -e ../flux/storage/storage-access.yaml ]; then
-        echo "../flux/storage/storage-access.yaml already exists, leaving it unchanged"
+      if [ -e ../flux/provisioned/storage/storage-access.yaml ]; then
+        echo "../flux/provisioned/storage/storage-access.yaml already exists, leaving it unchanged"
         exit 0
       fi
 
-      cat > ../flux/storage/storage-access.yaml <<'EOF'
+      cat > ../flux/provisioned/storage/storage-access.yaml <<'EOF'
 ${templatefile("storage-access.yaml.tftpl", {
   volumes = local.storage_access_volumes
 })}
 EOF
-      chmod 0640 ../flux/storage/storage-access.yaml
+      chmod 0640 ../flux/provisioned/storage/storage-access.yaml
     EOT
   }
 }
