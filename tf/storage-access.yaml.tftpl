@@ -33,6 +33,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: main-ad${vol.index + 1}
+  namespace: default
 spec:
   accessModes:
     - ReadWriteOnce

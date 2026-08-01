@@ -134,11 +134,6 @@ resource "null_resource" "storage_access" {
     command     = <<-EOT
       set -eu
 
-      if [ -e ../manifests/provisioned/storage/storage-access.yaml ]; then
-        echo "../manifests/provisioned/storage/storage-access.yaml already exists, leaving it unchanged"
-        exit 0
-      fi
-
       cat > ../manifests/provisioned/storage/storage-access.yaml <<'EOF'
 ${templatefile("storage-access.yaml.tftpl", {
   volumes = local.storage_access_volumes
