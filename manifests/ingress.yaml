@@ -6,4 +6,22 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
-  rules: []
+  rules:
+    - http:
+        paths:
+        - path: /one
+          pathType: Prefix
+          backend:
+            service:
+              name: static-nginx-service-1
+              port:
+                number: 80
+    - http:
+        paths:
+        - path: /two
+          pathType: Prefix
+          backend:
+            service:
+              name: static-nginx-service-2
+              port:
+                number: 80
