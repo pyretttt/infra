@@ -1,0 +1,85 @@
+# AUTO-GENERATED from Terraform. Do not edit manually.
+#
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: main-ad1
+  annotations:
+    pv.kubernetes.io/provisioned-by: blockvolume.csi.oraclecloud.com
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 50Gi
+  csi:
+    driver: blockvolume.csi.oraclecloud.com
+    fsType: ext4
+    volumeHandle: ocid1.volume.oc1.me-dubai-1.abshqljrix65l6ginwyvwwl6vzwrhar4xagbteqrlrbhi6jbjtz5zznp5duq
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: topology.kubernetes.io/zone
+              operator: In
+              values:
+                - ME-DUBAI-1-AD-1
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: oci-bv
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: main-ad1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: oci-bv
+  volumeMode: Filesystem
+  volumeName: main-ad1
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: main-ad2
+  annotations:
+    pv.kubernetes.io/provisioned-by: blockvolume.csi.oraclecloud.com
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 50Gi
+  csi:
+    driver: blockvolume.csi.oraclecloud.com
+    fsType: ext4
+    volumeHandle: ocid1.volume.oc1.me-dubai-1.abshqljrzz3c3mvlhrwk54bpqd4fwqilzjjwmsll6bylpsmiauudmupbpovq
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: topology.kubernetes.io/zone
+              operator: In
+              values:
+                - ME-DUBAI-1-AD-1
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: oci-bv
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: main-ad2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: oci-bv
+  volumeMode: Filesystem
+  volumeName: main-ad2
+

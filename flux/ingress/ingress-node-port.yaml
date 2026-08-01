@@ -1,0 +1,29 @@
+# AUTO-GENERATED from Terraform. Do not edit manually.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nlb-nodeport
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/component: controller
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 31600
+    - name: https
+      port: 443
+      targetPort: 443
+      nodePort: 31601
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-gateway
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules: []

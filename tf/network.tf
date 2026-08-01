@@ -205,10 +205,12 @@ data "oci_containerengine_node_pool" "k8s_node_pool" {
 locals {
   ingress_http_node_port  = 31600
   ingress_https_node_port = 31601
-  active_nodes = flatten([
-    for pool in data.oci_containerengine_node_pool.k8s_node_pool : [
-      for node in pool.nodes : node if node.state == "ACTIVE"
-    ]
+  # Must be known at plan time — do not derive count from data-source node lists.
+  worker_count = var.arm_pool_count * var.arm_pool_size
+  # Flat worker list for NLB backends. Avoid filtering by state here: an ACTIVE-only
+  # filter makes length unknown at plan and can under-count mid-rollout.
+  worker_nodes = flatten([
+    for pool in data.oci_containerengine_node_pool.k8s_node_pool : pool.nodes
   ])
 }
 
@@ -243,19 +245,23 @@ resource "oci_network_load_balancer_backend_set" "nlb_https_backend_set" {
 }
 
 resource "oci_network_load_balancer_backend" "nlb_http_backend" {
-  count                    = length(local.active_nodes)
+  depends_on = [oci_containerengine_node_pool.k8s_node_pool]
+
+  count                    = local.worker_count
   backend_set_name         = oci_network_load_balancer_backend_set.nlb_http_backend_set.name
   network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
   port                     = local.ingress_http_node_port
-  target_id                = local.active_nodes[count.index].id
+  target_id                = local.worker_nodes[count.index].id
 }
 
 resource "oci_network_load_balancer_backend" "nlb_https_backend" {
-  count                    = length(local.active_nodes)
+  depends_on = [oci_containerengine_node_pool.k8s_node_pool]
+
+  count                    = local.worker_count
   backend_set_name         = oci_network_load_balancer_backend_set.nlb_https_backend_set.name
   network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
   port                     = local.ingress_https_node_port
-  target_id                = local.active_nodes[count.index].id
+  target_id                = local.worker_nodes[count.index].id
 }
 
 resource "oci_network_load_balancer_listener" "nlb_http_listener" {
