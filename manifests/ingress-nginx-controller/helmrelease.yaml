@@ -4,7 +4,7 @@ metadata:
   name: ingress-nginx
   namespace: default
 spec:
-  interval: 30m
+  interval: 2h
   chart:
     spec:
       chart: ingress-nginx
@@ -13,7 +13,7 @@ spec:
         kind: HelmRepository
         name: ingress-nginx
         namespace: flux-system
-      interval: 1h
+      interval: 2h
   values:
     controller:
       # Public exposure is via Terraform NLB → NodePort Service (nlb-nodeport).
