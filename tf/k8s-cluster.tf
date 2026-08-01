@@ -83,6 +83,7 @@ resource "oci_containerengine_node_pool" "k8s_node_pool" {
   node_source_details {
     image_id    = var.arm_pool_images[0]
     source_type = "image"
+    boot_volume_size_in_gbs = 50
   }
 
   initial_node_labels {
@@ -102,11 +103,11 @@ resource "oci_artifacts_container_repository" "docker_repository" {
 }
 
 resource "oci_core_volume" "arm_instance_volume" {
-  count          = var.arm_pool_count
+  count          = var.arm_pool_size
   compartment_id = var.compartment_id
 
   availability_domain = var.ad_list[count.index]
-  size_in_gbs         = var.arm_pool_instance_disk_size_in_gb
+  size_in_gbs         = 50
   freeform_tags       = { "k8s-index" = count.index }
 }
 
