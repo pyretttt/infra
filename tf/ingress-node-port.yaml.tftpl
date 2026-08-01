@@ -2,32 +2,28 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ingress-nginx-controller
+  name: nlb-nodeport
 spec:
   type: NodePort
   selector:
-    app: api
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/component: controller
   ports:
-    - port: 80
+    - name: http
+      port: 80
       targetPort: 80
-      nodePort: ${vol.http_port}
-    - port: 443
+      nodePort: ${cfg.http_port}
+    - name: https
+      port: 443
       targetPort: 443
-      # Every Node in cluster exposes service through this port
-      nodePort: ${vol.https_port}
-
+      nodePort: ${cfg.https_port}
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: main-ad${vol.index + 1}
+  name: ingress-gateway
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: ${vol.size_gb}Gi
-  storageClassName: oci-bv
-  volumeMode: Filesystem
-  volumeName: main-ad${vol.index + 1}
-%{ endfor ~}
+  ingressClassName: nginx
+  rules: []

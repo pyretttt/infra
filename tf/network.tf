@@ -273,3 +273,37 @@ resource "oci_network_load_balancer_listener" "nlb_https_listener" {
   port                     = 443
   protocol                 = "TCP"
 }
+
+locals {
+  cfg = {
+    http_port = local.ingress_http_node_port
+    https_port = local.ingress_https_node_port
+  }
+}
+
+resource "null_resource" "ingress_node_port" {
+  triggers = {
+    content_sha = sha256(templatefile("ingress-node-port.yaml.tftpl", {
+      cfg = local.cfg
+    }))
+  }
+
+  provisioner "local-exec" {
+    working_dir = path.module
+    command     = <<-EOT
+      set -eu
+
+      if [ -e ../flux/ingress/ingress-node-port.yaml ]; then
+        echo "../flux/ingress/ingress-node-port.yaml already exists, leaving it unchanged"
+        exit 0
+      fi
+
+      cat > ../flux/ingress/ingress-node-port.yaml <<'EOF'
+${templatefile("ingress-node-port.yaml.tftpl", {
+  cfg = local.cfg
+})}
+EOF
+      chmod 0640 ../flux/ingress/ingress-node-port.yaml
+    EOT
+  }
+}
