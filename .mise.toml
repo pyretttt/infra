@@ -36,3 +36,16 @@ else
     exit 1
 fi
 """
+
+[tasks."setup-fluxcd"]
+env.GITHUB_TOKEN = { required = "Github token required for fluxcd setup" }
+env.GITHUB_USER  = { required = "Github username required for fluxcd setup" }
+description = "Fluxcd configuration to reconcil this repo definitions from provisioned cluster"
+run = """
+flux bootstrap github \
+  --owner=$GITHUB_USER \
+  --repository=$(basename -s .git $(git config --get remote.origin.url)) \
+  --branch=main \
+  --path=./flux/cluster \
+  --personal
+"""

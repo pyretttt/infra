@@ -299,17 +299,17 @@ resource "null_resource" "ingress_node_port" {
     command     = <<-EOT
       set -eu
 
-      if [ -e ../flux/provisioned/ingress/ingress-node-port.yaml ]; then
-        echo "../flux/provisioned/ingress/ingress-node-port.yaml already exists, leaving it unchanged"
+      if [ -e ../manifests/provisioned/ingress/ingress-node-port.yaml ]; then
+        echo "../manifests/provisioned/ingress/ingress-node-port.yaml already exists, leaving it unchanged"
         exit 0
       fi
 
-      cat > ../flux/provisioned/ingress/ingress-node-port.yaml <<'EOF'
+      cat > ../manifests/provisioned/ingress/ingress-node-port.yaml <<'EOF'
 ${templatefile("ingress-node-port.yaml.tftpl", {
   cfg = local.cfg
 })}
 EOF
-      chmod 0640 ../flux/provisioned/ingress/ingress-node-port.yaml
+      chmod 0640 ../manifests/provisioned/ingress/ingress-node-port.yaml
     EOT
   }
 }
