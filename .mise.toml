@@ -37,6 +37,13 @@ else
 fi
 """
 
+[tasks."generate-kube-config"]
+description = "Regenerated kube.config file"
+dir = "tf"
+run = """
+terraform apply -replace=null_resource.kube_config
+"""
+
 [tasks."setup-fluxcd"]
 env.GITHUB_TOKEN = { required = "Github token required for fluxcd setup" }
 env.GITHUB_USER  = { required = "Github username required for fluxcd setup" }
@@ -47,5 +54,6 @@ flux bootstrap github \
   --repository=$(basename -s .git $(git config --get remote.origin.url)) \
   --branch=main \
   --path=./flux/cluster \
-  --personal
+  --personal \
+  --kubeconfig tf/.kube.config
 """
