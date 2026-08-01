@@ -15,7 +15,7 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: static-nginx-deployment
+  name: static-nginx-deployment-2
 spec:
   replicas: 1
   selector:

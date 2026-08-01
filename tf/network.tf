@@ -299,11 +299,6 @@ resource "null_resource" "ingress_node_port" {
     command     = <<-EOT
       set -eu
 
-      if [ -e ../manifests/provisioned/ingress/ingress-node-port.yaml ]; then
-        echo "../manifests/provisioned/ingress/ingress-node-port.yaml already exists, leaving it unchanged"
-        exit 0
-      fi
-
       cat > ../manifests/provisioned/ingress/ingress-node-port.yaml <<'EOF'
 ${templatefile("ingress-node-port.yaml.tftpl", {
   cfg = local.cfg
