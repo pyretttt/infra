@@ -34,4 +34,4 @@ spec:
     - port: 51820
       targetPort: 51820
       nodePort: 31602
-      protocol: udp
+      protocol: UDP
