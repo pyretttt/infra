@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wireguard
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      name: wireguard
+  template:
+    metadata:
+      labels:
+        name: wireguard
+    spec:
+      initContainers:
+        # linuxserver/wireguard loads tunnels from /config/wg_confs/*.conf.
+        # The template only contains the "ENI" placeholder; replace it with the
+        # pod's egress interface name so PostUp/PostDown MASQUERADE rules work.
+        - name: "wireguard-template-replacement"
+          image: "busybox"
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              mkdir -p /config/wg_confs
+              ENI=$(ip route get 8.8.8.8 | awk '/8\.8\.8\.8/ {print $5; exit}')
+              sed "s/ENI/${ENI}/g" /etc/wireguard-secret/wg0.conf.template > /config/wg_confs/wg0.conf
+              chmod 600 /config/wg_confs/wg0.conf
+          volumeMounts:
+            - name: wireguard-config
+              mountPath: /config
+            - name: wireguard-secret
+              mountPath: /etc/wireguard-secret/
+      containers:
+        - name: "wireguard"
+          image: "lscr.io/linuxserver/wireguard:1.0.20260223-r0-ls119"
+          ports:
+            - containerPort: 51820
+              protocol: UDP
+          env:
+            - name: "TZ"
+              value: "Europe/Moscow"
+          volumeMounts:
+            - name: wireguard-config
+              mountPath: /config
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+      volumes:
+        - name: wireguard-config
+          emptyDir: {}
+        - name: wireguard-secret
+          secret:
+            secretName: wireguard

@@ -22,24 +22,16 @@ variable "arm_pool_images" {
     "ocid1.image.oc1.me-dubai-1.aaaaaaaauhjz7i3pp2u5aamneztzlb7r7qo2rij6gi4u63azivv7oqoppjmq",
  ]
 }
-variable "enable_wireguard" {
-  type        = bool
-  description = "Weather or not create wireguard security group allow rules."
-  default     = false
-}
-
 variable "git_ref" {
   description = "Git branch or tag in the format refs/heads/main or refs/tags/v1.0.0"
   type        = string
   default     = "refs/heads/main"
 }
-
 variable "flux_version" {
   description = "Flux version semver range"
   type        = string
   default     = "2.x"
 }
-
 variable "flux_registry" {
   description = "Flux distribution registry"
   type        = string

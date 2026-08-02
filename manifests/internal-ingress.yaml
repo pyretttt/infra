@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-gateway-internal
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx-internal
+  rules:
+    - http:
+        paths:
+        - path: /one
+          pathType: Prefix
+          backend:
+            service:
+              name: static-nginx-service-1
+              port:
+                number: 80
+    - http:
+        paths:
+        - path: /two
+          pathType: Prefix
+          backend:
+            service:
+              name: static-nginx-service-2
+              port:
+                number: 80

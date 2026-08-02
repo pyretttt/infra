@@ -116,6 +116,17 @@ resource "oci_core_security_list" "public_subnet_sl" {
     }
   }
 
+  ingress_security_rules {
+    protocol    = "17"
+    source      = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+    stateless   = false
+    description = "Internet to NLB WireGuard listener"
+    udp_options {
+      max = 51820
+      min = 51820
+    }
+  }
 }
 
 # Private subnet (10.0.1.0/24): worker nodes (and their pods via node networking).
@@ -154,6 +165,14 @@ resource "oci_core_security_list" "private_subnet_sl" {
     source_type = "CIDR_BLOCK"
     protocol    = "6"
     description = "Kubernetes API endpoint and network load balancer to worker nodes"
+  }
+
+  ingress_security_rules {
+    stateless   = false
+    source      = "10.0.0.0/24"
+    source_type = "CIDR_BLOCK"
+    protocol    = "17"
+    description = "Network load balancer WireGuard listener to worker nodes"
   }
 
   # ICMP fragmentation-needed from anywhere so PMTUD can correct MTU for node traffic
@@ -205,6 +224,7 @@ data "oci_containerengine_node_pool" "k8s_node_pool" {
 locals {
   ingress_http_node_port  = 31600
   ingress_https_node_port = 31601
+  ingress_wg_node_port    = 31602
   # Must be known at plan time — do not derive count from data-source node lists.
   worker_count = var.arm_pool_count * var.arm_pool_size
   # Flat worker list for NLB backends. Avoid filtering by state here: an ACTIVE-only
@@ -243,6 +263,16 @@ resource "oci_network_load_balancer_backend_set" "nlb_https_backend_set" {
   policy                   = "FIVE_TUPLE"
   is_preserve_source       = false
 }
+resource "oci_network_load_balancer_backend_set" "nlb_wg_backend_set" {
+  health_checker {
+    protocol = "TCP"
+    port     = 10256
+  }
+  name                     = "k8s-wg-backend-set"
+  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
+  policy                   = "FIVE_TUPLE"
+  is_preserve_source       = false
+}
 
 resource "oci_network_load_balancer_backend" "nlb_http_backend" {
   depends_on = [oci_containerengine_node_pool.k8s_node_pool]
@@ -253,7 +283,6 @@ resource "oci_network_load_balancer_backend" "nlb_http_backend" {
   port                     = local.ingress_http_node_port
   target_id                = local.worker_nodes[count.index].id
 }
-
 resource "oci_network_load_balancer_backend" "nlb_https_backend" {
   depends_on = [oci_containerengine_node_pool.k8s_node_pool]
 
@@ -261,6 +290,15 @@ resource "oci_network_load_balancer_backend" "nlb_https_backend" {
   backend_set_name         = oci_network_load_balancer_backend_set.nlb_https_backend_set.name
   network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
   port                     = local.ingress_https_node_port
+  target_id                = local.worker_nodes[count.index].id
+}
+resource "oci_network_load_balancer_backend" "nlb_wg_backend" {
+  depends_on = [oci_containerengine_node_pool.k8s_node_pool]
+
+  count                    = local.worker_count
+  backend_set_name         = oci_network_load_balancer_backend_set.nlb_wg_backend_set.name
+  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
+  port                     = local.ingress_wg_node_port
   target_id                = local.worker_nodes[count.index].id
 }
 
@@ -279,11 +317,19 @@ resource "oci_network_load_balancer_listener" "nlb_https_listener" {
   port                     = 443
   protocol                 = "TCP"
 }
+resource "oci_network_load_balancer_listener" "nlb_wg_listener" {
+  default_backend_set_name = oci_network_load_balancer_backend_set.nlb_wg_backend_set.name
+  name                     = "k8s-nlb-wg-listener"
+  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
+  port                     = 51820
+  protocol                 = "UDP"
+}
 
 locals {
   cfg = {
     http_port = local.ingress_http_node_port
     https_port = local.ingress_https_node_port
+    wg_port = local.ingress_wg_node_port
   }
 }
 

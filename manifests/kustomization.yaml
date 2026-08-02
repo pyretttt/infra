@@ -1,11 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- ingress-nginx-controller/namespace.yaml
 - ingress-nginx-controller/helmrepository.yaml
 - ingress-nginx-controller/helmrelease.yaml
-- ingress.yaml
+- public-ingress.yaml
+- internal-ingress.yaml
 - provisioned/ingress/ingress-node-port.yaml
 - provisioned/storage/storage-access.yaml
 - nginx-1/static-nginx.yaml
 - nginx-2/static-nginx.yaml
+- wg/deployment.yaml
+- wg/wg-config.yaml
