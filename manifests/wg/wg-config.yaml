@@ -18,5 +18,5 @@ stringData:
 
     [Peer]
     # Example Peer 1
-    PublicKey = AOIzLd2C71DtY8DWgUfuMllRNa0iR1O3tO2WbFO7ICU=
+    PublicKey = BT0Kw3k1GK36bgaPEGvNTJRBd8Rq2aOmp7krnn3xYBg=
     AllowedIPs = 172.16.16.10/32
