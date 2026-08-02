@@ -1,4 +1,5 @@
 [tools]
+age = "latest"
 flux2 = "latest"
 helm = "latest"
 k9s = "latest"
@@ -56,4 +57,31 @@ flux bootstrap github \
   --path=./flux/cluster \
   --personal \
   --kubeconfig tf/.kube.config
+"""
+
+[tasks."fluxcd-age-setup"]
+description = "Creates age key file; Creates cluster secret with created age file; Stores public age key in separate file; You should manually remove age file"
+run = """
+if [ -f "age_public_key" ]; then
+    echo "Public key exists, setup has already been done"
+    exit 1
+fi
+
+age-keygen -o age.delete_me.agekey
+age-keygen -y age.delete_me.agekey > age_public_key
+cat age.delete_me.agekey |
+kubectl --kubeconfig tf/.kube.config create secret generic sops-age \
+--namespace=flux-system \
+--from-file=age.agekey=/dev/stdin \
+--dry-run=client -o yaml | kubectl --kubeconfig tf/.kube.config apply -f -
+"""
+
+[tasks."age-encrypt"]
+description = "Encrypts secret via sops and age public key"
+usage = '''
+flag "--file <file>" help="File to encrypt"
+'''
+run = """
+sops --age=$(cat age_public_key) \
+--encrypt --encrypted-regex '^(data|stringData)$' --in-place ${usage_file}
 """

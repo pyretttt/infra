@@ -3,3 +3,4 @@ tofu/.terraform
 *.auto.tfvars
 teardown.sh
 .kube.config
+age.delete_me.agekey
