@@ -6,6 +6,7 @@ k9s = "latest"
 opentofu = "latest"
 sops = "latest"
 terraform = "latest"
+# additionally openssl
 
 [tasks."oci-provision"]
 description = "creates oci k8s free infrastructure"
@@ -84,4 +85,26 @@ flag "--file <file>" help="File to encrypt"
 run = """
 sops --age=$(cat age_public_key) \
 --encrypt --encrypted-regex '^(data|stringData)$' --in-place ${usage_file}
+"""
+
+[tasks."generate-wg-keys"]
+description = "Generate wireguard client and server key pairs"
+run = """
+OPENSSL=$(brew --prefix openssl)/bin/openssl
+gen_wg_keypair() {
+  pem=$("$OPENSSL" genpkey -algorithm X25519)
+  priv=$(printf '%s\n' "$pem" | "$OPENSSL" pkey -outform DER | tail -c 32 | base64)
+  pub=$(printf '%s\n' "$pem" | "$OPENSSL" pkey -pubout -outform DER | tail -c 32 | base64)
+  printf '%s %s\n' "$priv" "$pub"
+}
+set -- $(gen_wg_keypair)
+SERVER_PRIV=$1
+SERVER_PUB=$2
+set -- $(gen_wg_keypair)
+CLIENT_PRIV=$1
+CLIENT_PUB=$2
+echo "SERVER_PRIV=$SERVER_PRIV"
+echo "SERVER_PUB=$SERVER_PUB"
+echo "CLIENT_PRIV=$CLIENT_PRIV"
+echo "CLIENT_PUB=$CLIENT_PUB"
 """

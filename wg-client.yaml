@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: wireguard-client
+    namespace: default
+type: Opaque
+stringData:
+    wg0.conf.template: ENC[AES256_GCM,data:of6zCy8bvEGOIJQeQzcrnOSAXzSILTXiq36Ju7eL91z9ZsYOFAgT9aHapTmZIMdczTTPs8OyI2oSKl+y6C5qOQuNo8NXFet7Kd8jvxAxm47n7Zgjywsc+OIPAyrs+DDE91EJJcu3idUTIx38PUTwicgv8/NRgcogXAr2/jsWfaLJHso8TCLeM55e+2768SDkOzSoVAYjnw87IZIeGsT7Ce43ZHu399K/VXKkzB9+ajxQt9tY1t+hkH8khDbcaiQH7rKTToidZe2fYswXOAqYT1drSvpOhF4OGibQ4qHKF/n5bOWswX4+rUluJnAP0NGhFNqYLZhTvQ3r/yJv9exENSEz4dFPXpG7lXeMXWeBoQT3Go57cmcB0U0AQ0kedoWuf0s756sbPe8c,iv:SQmUaYtcqXXFv+8RUDi+y5GNFGeszaS0+5tr758xVlA=,tag:s6J7xGxjHnaeFHeIdGb4CA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBGZm5Nc2hmRitJU2ZNZWVU
+            bk1HQS9vcDIxNXh4czdzZ1ZUbGh6NUtkc1MwClh6T3lvdFo3Y2R6dnBjeDZ1NW54
+            UWdXdXBwYkVOTmlzTVRjMmhFa0MxL3cKLS0tIGp1eHFXOExwQXYxU3RkejMreDlx
+            NXZmMTV3dFZIWnFYcThURDlzeUFVWkkKCnuuapSLZGRMAUMBZyX1uATwDbfA7IMy
+            61yPvADjdBYj7b5Y7nILfANr+ZWi+2UwNZh0yTFIxaRJSUnKzDKiKA==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1m9wcxcdm4tkjqd5daaal2kqxutmpu3nxq8zxlry5atjs82n8yvqsq9kga0
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-08-02T16:38:56Z"
+    mac: ENC[AES256_GCM,data:/e7e8VBtePpmRVBwy3FCV+z028s7gRuh5s4yS1xDu559Kfr+03htmUj7K+sX56Jjs5FCnHpNBHcd0VlGmK64o/1vNYhl+uFAlVf6JsucNTHRiRL4ckObJ6kvGzU5r0C1rPW22l0Bn56glYN5WlWXMn2ziMF/IM9U++iQJ4OXkJA=,iv:0cYZyKuUJi3D0AGCzqRL8+JMl3UbceRQosTB9474lfU=,tag:2qJjMdpvONhbOr6JosnpqA==,type:str]
+    version: 3.13.3
