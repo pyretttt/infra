@@ -1,4 +1,4 @@
-# What is needed
+# What we do now
 ***
 
 Currently acces to private endpoints work through wireguard. The problem is that it can't resolve private k8s services. There're multiple ways to solve this:

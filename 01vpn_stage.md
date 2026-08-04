@@ -1,4 +1,4 @@
-# What is needed
+# What we do now
 ***
 
 Currently public cluster endpoints are exposed through NLB (L4) which targets NodePort.
