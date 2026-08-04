@@ -41,15 +41,15 @@ metadata:
   namespace: internal-dns
 data:
   Corefile: |
-    internal.polywhale.com:53 {
+    polywhale.com:53 {
         errors
-        # <service>.internal.polywhale.com -> <service>.default.svc.internal.polywhale.com
+        # <service>.polywhale.com -> <service>.default.svc.polywhale.com
         # Only single-label names are rewritten so full *.*.svc.* names still work.
         rewrite stop {
-            name regex ^([^.]+)\.internal\.polywhale\.com\.$ {1}.default.svc.internal.polywhale.com.
+            name regex ^([^.]+)\.polywhale\.com\.$ {1}.default.svc.polywhale.com.
             answer auto
         }
-        kubernetes internal.polywhale.com {
+        kubernetes polywhale.com {
             labels internal-dns=enabled
             ttl 30
         }
@@ -98,10 +98,9 @@ spec:
               containerPort: 8181
           resources:
             requests:
-              cpu: 25m
               memory: 128Mi
             limits:
-              cpu: 75m
+              cpu: 100m
               memory: 128Mi
           livenessProbe:
             httpGet:
@@ -127,6 +126,7 @@ metadata:
   namespace: internal-dns
 spec:
   type: ClusterIP
+  clusterIP: 10.96.123.47
   selector:
     app: internal-coredns
   ports:
