@@ -43,6 +43,12 @@ data:
   Corefile: |
     internal.polywhale.com:53 {
         errors
+        # <service>.internal.polywhale.com -> <service>.default.svc.internal.polywhale.com
+        # Only single-label names are rewritten so full *.*.svc.* names still work.
+        rewrite stop {
+            name regex ^([^.]+)\.internal\.polywhale\.com\.$ {1}.default.svc.internal.polywhale.com.
+            answer auto
+        }
         kubernetes internal.polywhale.com {
             labels internal-dns=enabled
             ttl 30
