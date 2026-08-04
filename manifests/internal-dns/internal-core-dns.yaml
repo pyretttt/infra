@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: internal-dns
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: internal-coredns
+  namespace: internal-dns
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: internal-coredns
+rules:
+  - apiGroups: [""]
+    resources: ["services", "endpoints", "namespaces"]
+    verbs: ["list", "watch"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: internal-coredns
+subjects:
+  - kind: ServiceAccount
+    name: internal-coredns
+    namespace: internal-dns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: internal-coredns
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: internal-coredns
+  namespace: internal-dns
+data:
+  Corefile: |
+    internal.polywhale.com:53 {
+        errors
+        kubernetes internal.polywhale.com {
+            labels internal-dns=enabled
+            ttl 30
+        }
+        cache 30
+    }
+    .:53 {
+        errors
+        health :8080
+        ready :8181
+        forward . 1.1.1.1 1.0.0.1 8.8.8.8 8.8.4.4
+        cache 30
+        loop
+        reload
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: internal-coredns
+  namespace: internal-dns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: internal-coredns
+  template:
+    metadata:
+      labels:
+        app: internal-coredns
+    spec:
+      serviceAccountName: internal-coredns
+      containers:
+        - name: coredns
+          image: docker.io/coredns/coredns:latest
+          args: ["-conf", "/etc/coredns/Corefile"]
+          ports:
+            - name: dns-udp
+              containerPort: 53
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+            - name: health
+              containerPort: 8080
+            - name: ready
+              containerPort: 8181
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 75m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: health
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: ready
+          volumeMounts:
+            - name: config
+              mountPath: /etc/coredns
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: internal-coredns
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: internal-coredns
+  namespace: internal-dns
+spec:
+  type: ClusterIP
+  selector:
+    app: internal-coredns
+  ports:
+    - name: dns-udp
+      port: 53
+      targetPort: dns-udp
+      protocol: UDP
+    - name: dns-tcp
+      port: 53
+      targetPort: dns-tcp
+      protocol: TCP

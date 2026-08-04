@@ -47,6 +47,8 @@ kind: Service
 metadata:
   name: static-nginx-service-1
   namespace: default
+  labels:
+    internal-dns: enabled
 spec:
   type: ClusterIP
   selector:

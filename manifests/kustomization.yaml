@@ -11,3 +11,4 @@ resources:
 - nginx-2/static-nginx.yaml
 - wg/deployment.yaml
 - wg/wg-config.yaml
+- internal-dns/internal-core-dns.yaml
