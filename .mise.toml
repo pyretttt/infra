@@ -46,6 +46,63 @@ run = """
 terraform apply -replace=null_resource.kube_config
 """
 
+[tasks."generate-wg-keys"]
+description = "Generate wireguard client and server key pairs"
+run = """
+OPENSSL=$(brew --prefix openssl)/bin/openssl
+gen_wg_keypair() {
+  pem=$("$OPENSSL" genpkey -algorithm X25519)
+  priv=$(printf '%s\n' "$pem" | "$OPENSSL" pkey -outform DER | tail -c 32 | base64)
+  pub=$(printf '%s\n' "$pem" | "$OPENSSL" pkey -pubout -outform DER | tail -c 32 | base64)
+  printf '%s %s\n' "$priv" "$pub"
+}
+set -- $(gen_wg_keypair)
+SERVER_PRIV=$1
+SERVER_PUB=$2
+set -- $(gen_wg_keypair)
+CLIENT_PRIV=$1
+CLIENT_PUB=$2
+printf 'SERVER_PRIV=%s\nSERVER_PUB=%s\nCLIENT_PRIV=%s\nCLIENT_PUB=%s\n' \
+  "$SERVER_PRIV" "$SERVER_PUB" "$CLIENT_PRIV" "$CLIENT_PUB" > .wg-keys.env
+"""
+
+[tasks."render-wg-config"]
+description = "Renders wireguard configs"
+run = """
+if [ -f manifests/wg/wg-config.yaml && -f wg-client.yaml ]; then
+    echo Wireguard Already configured - skip setup
+    exit 0
+fi
+
+if [ -f "tf/.kube.config" ]; then
+    echo "Kubeconfig found"
+else
+    echo "Kubeconfig not found"
+    exit 1
+fi
+
+mise run generate-wg-keys
+set -a && source .wg-keys.env && set +a
+
+sed -e 's|${SERVER_PRIV}|'"${SERVER_PRIV}"'|g' \
+    -e 's|${CLIENT_PUB}|'"${CLIENT_PUB}"'|g' \
+  manifests/wg/wg-config.yaml.tmpl > manifests/wg/wg-config.yaml
+
+mise run age-encrypt --file manifests/wg/wg-config.yaml
+
+INTERNAL_DNS_IP=$(kubectl --kubeconfig tf/.kube.config get svc internal-coredns -n internal-dns -o jsonpath='{.spec.clusterIPs[0]}')
+
+sed -e 's|${CLIENT_PRIV}|'"${CLIENT_PRIV}"'|g' \
+    -e 's|${SERVER_PUB}|'"${SERVER_PUB}"'|g' \
+    -e 's|${INTERNAL_DNS_IP}|'"${INTERNAL_DNS_IP}"'|g' \
+  wg-client.yaml.tmpl > wg-client.yaml
+
+mise run age-encrypt --file wg-client.yaml
+
+rm -f .wg-keys.env
+"""
+
+
 [tasks."setup-fluxcd"]
 env.GITHUB_TOKEN = { required = "Github token required for fluxcd setup" }
 env.GITHUB_USER  = { required = "Github username required for fluxcd setup" }
@@ -85,26 +142,4 @@ flag "--file <file>" help="File to encrypt"
 run = """
 sops --age=$(cat age_public_key) \
 --encrypt --encrypted-regex '^(data|stringData)$' --in-place ${usage_file}
-"""
-
-[tasks."generate-wg-keys"]
-description = "Generate wireguard client and server key pairs"
-run = """
-OPENSSL=$(brew --prefix openssl)/bin/openssl
-gen_wg_keypair() {
-  pem=$("$OPENSSL" genpkey -algorithm X25519)
-  priv=$(printf '%s\n' "$pem" | "$OPENSSL" pkey -outform DER | tail -c 32 | base64)
-  pub=$(printf '%s\n' "$pem" | "$OPENSSL" pkey -pubout -outform DER | tail -c 32 | base64)
-  printf '%s %s\n' "$priv" "$pub"
-}
-set -- $(gen_wg_keypair)
-SERVER_PRIV=$1
-SERVER_PUB=$2
-set -- $(gen_wg_keypair)
-CLIENT_PRIV=$1
-CLIENT_PUB=$2
-echo "SERVER_PRIV=$SERVER_PRIV"
-echo "SERVER_PUB=$SERVER_PUB"
-echo "CLIENT_PRIV=$CLIENT_PRIV"
-echo "CLIENT_PUB=$CLIENT_PUB"
 """

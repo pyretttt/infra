@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: wireguard-client
+    namespace: default
+type: Opaque
+stringData:
+    wg0.conf.template: |
+        [Interface]
+        PrivateKey = ${CLIENT_PRIV}
+        Address = 172.16.16.10/32
+        DNS = ${INTERNAL_DNS_IP}
+
+        [Peer]
+        PublicKey = ${SERVER_PUB}
+        AllowedIPs = 10.0.1.0/24, 10.0.0.0/24, 10.96.0.0/16, 10.244.0.0/16
+        Endpoint = 139.185.35.4:51820
+        PersistentKeepalive = 25
