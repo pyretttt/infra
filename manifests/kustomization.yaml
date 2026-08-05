@@ -14,7 +14,6 @@ resources:
 - internal-dns/internal-core-dns.yaml
 - cert-manager/helmrepository.yaml
 - cert-manager/helmrelease.yaml
-- cert-manager/issuer.yaml
 - external-dns/helmrepository.yaml
 - external-dns/helmrelease.yaml
 - external-dns/secret.yaml

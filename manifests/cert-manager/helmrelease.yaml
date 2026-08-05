@@ -5,7 +5,8 @@ metadata:
   namespace: flux-system
 spec:
   interval: 2h
-  metadata:
+  install:
+    createNamespace: true
   chart:
     spec:
       chart: cert-manager
