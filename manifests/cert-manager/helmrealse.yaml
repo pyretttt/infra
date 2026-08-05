@@ -1,0 +1,21 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cert-manager
+  namespace: default
+spec:
+  interval: 2h
+  metadata:
+  chart:
+    spec:
+      chart: cert-manager
+      version: "v1.21.1"
+      sourceRef:
+        kind: HelmRepository
+        name: cert-manager
+        namespace: flux-system
+      interval: 2h
+  releaseName: cert-manager
+  values:
+    crds:
+      enabled: true
