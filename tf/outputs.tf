@@ -6,10 +6,16 @@ output "arm-instance-volume-ocids" {
   value = oci_core_volume.arm_instance_volume[*].id
 }
 
-output "load_balancer_public_ip" {
+output "load_balancer_public_ips" {
   value = [
     for ip in oci_network_load_balancer_network_load_balancer.nlb.ip_addresses : ip.ip_address if ip.is_public
   ]
+}
+
+output "load_balancer_public_ip" {
+  value = one([
+    for ip in oci_network_load_balancer_network_load_balancer.nlb.ip_addresses : ip.ip_address if ip.is_public
+  ])
 }
 
 output "ingress_http_node_port" {

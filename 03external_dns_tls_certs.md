@@ -309,7 +309,9 @@ Goal: ExternalDNS keeps the public A/AAAA pointed at the NLB IP; cert-manager is
 
 ### 4. Install ExternalDNS (Flux) → Cloudflare
 
-1. Create a Secret (SOPS-encrypt before commit), e.g. in namespace `external-dns`:
+Use the **kubernetes-sigs** chart already wired in-repo (`manifests/external-dns/`, chart `1.21.1` → app `0.21.0`). Do not switch to Bitnami; value shapes differ.
+
+1. Create a Secret (SOPS-encrypt before commit) in namespace `external-dns`. Key name must match the HelmRelease `env` below:
 
    ```yaml
    apiVersion: v1
@@ -321,22 +323,76 @@ Goal: ExternalDNS keeps the public A/AAAA pointed at the NLB IP; cert-manager is
      api-token: "<token from step 1>"
    ```
 
-2. HelmRepository for ExternalDNS (bitnami or kubernetes-sigs chart — pick one and stick to it).
-3. HelmRelease values that matter for **this** cluster:
+2. HelmRepository: `https://kubernetes-sigs.github.io/external-dns` (see `manifests/external-dns/helmrepository.yaml`).
 
-   | Setting | Value / reason |
-   |---------|----------------|
-   | `provider` | `cloudflare` |
-   | Cloudflare token | from the Secret above |
-   | `domainFilters` | your public zone only |
-   | `txtOwnerId` | unique string (e.g. `oci-free-k8s`) so ExternalDNS does not fight other clusters |
-   | `sources` | `ingress` (enough for one public Ingress) |
-   | **default targets** | **NLB public IP** — required because `ingress-nginx` Service is disabled; ExternalDNS cannot discover a cloud LB |
-   | `policy` | `upsert-only` or `sync` (prefer `upsert-only` until comfortable) |
-   | proxy / Cloudflare | records must be **DNS-only** (not proxied); chart/env that sets proxied=false |
-   | replicas / resources | 1 replica, small requests/limits |
+3. HelmRelease (`manifests/external-dns/helmrealse.yaml`): set `spec.targetNamespace: external-dns` and `spec.releaseName: external-dns`. Chart Deployment is hardcoded to **1 replica** — fine for Always Free; do not try to scale it.
 
-   Teach ExternalDNS the static NLB IP via chart equivalent of `--default-targets=<nlb_public_ip>` **or** annotate the Ingress with `external-dns.alpha.kubernetes.io/target: <nlb_public_ip>`. Prefer one approach and document it in-repo.
+#### ExternalDNS values — what each key does here
+
+| Chart value | Proposed | Why |
+|-------------|----------|-----|
+| `provider.name` | `cloudflare` | DNS host for the public zone (grey-cloud A records only). |
+| `env[CF_API_TOKEN]` | Secret `cloudflare-api-token` / key `api-token` | Token auth; do **not** also set `CF_API_KEY`/`CF_API_EMAIL`. |
+| `domainFilters` | `[example.com]` | Manage **only** the public zone. Keeps internal `*.polywhale.com` Ingresses out of Cloudflare. Replace with your real apex. |
+| `txtOwnerId` | `oci-free-k8s` | Ownership TXT marker so another ExternalDNS (or a rebuild) does not fight this cluster’s records. |
+| `registry` | `txt` (default) | Stores ownership next to each managed record. |
+| `sources` | `[ingress]` | One public Ingress is enough. Drop `service` / `crd` / `gateway-httproute` — with `controller.service.enabled: false` there is no cloud LB IP to discover, and extra sources only invent bad targets. |
+| `managedRecordTypes` | `[A]` | NLB is IPv4 today (`load_balancer_public_ip`). Add `AAAA` only if you later publish an IPv6 NLB address. |
+| `policy` | `upsert-only` | Create/update records; do **not** delete stale ones until you trust the setup. Switch to `sync` later if you want deletions. |
+| `extraArgs.default-targets` | `"<nlb_public_ip>"` | **Required.** Ingress has no `status.loadBalancer` IP (Service disabled). This forces every managed A record → OCI NLB public IP. Prefer this over per-Ingress `external-dns.alpha.kubernetes.io/target` so the IP lives in one GitOps place. |
+| `extraArgs.cloudflare-proxied` | omit / `false` | Must stay **DNS-only** (R4). Enabling proxy would orange-cloud records and break “DNS → NLB”. |
+| `extraArgs.exclude-target-net` | `10.0.0.0/8` | Belt-and-suspenders: ignore private ClusterIP/node nets if a source ever leaks them. Harmless with `default-targets` set. |
+| `interval` | `1m` (default) | Fast enough for one hostname; Cloudflare rate limits are not a concern at this scale. |
+| `resources` | requests/limits below | Cap Always Free footprint. |
+
+**Chosen NLB targeting approach:** `--default-targets` in Helm values (not Ingress annotations). Do not also set `external-dns.alpha.kubernetes.io/target` unless you temporarily override.
+
+#### Proposed `spec.values` (paste into the HelmRelease)
+
+Replace `example.com` and `<nlb_public_ip>` before commit (`terraform -chdir=tf output -raw load_balancer_public_ip`):
+
+```yaml
+values:
+  provider:
+    name: cloudflare
+  policy: upsert-only
+  sources:
+    - ingress
+  domainFilters:
+    - example.com
+  txtOwnerId: oci-free-k8s
+  managedRecordTypes:
+    - A
+  env:
+    - name: CF_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: cloudflare-api-token
+          key: api-token
+  extraArgs:
+    default-targets: "<nlb_public_ip>"
+    exclude-target-net: "10.0.0.0/8"
+    # do NOT set cloudflare-proxied: true  — records must stay DNS-only
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi
+```
+
+Map-form `extraArgs` renders as `--default-targets=<ip>` / `--exclude-target-net=10.0.0.0/8` (chart 1.21.1). Array form (`- --default-targets=...`) is equivalent if you prefer it.
+
+#### Align the in-repo draft
+
+Current `manifests/external-dns/helmrealse.yaml` is a stub — update it to match the table above:
+
+- Secret ref: `cloudflare-api-token` / `api-token` (not `external-dns-config` / `apiKey`).
+- `sources: [ingress]` only (drop `service`, `crd`, `gateway-httproute`).
+- Add `domainFilters`, `txtOwnerId`, `default-targets`, and `resources`.
+- Change `policy: sync` → `upsert-only` until DNS behaviour looks right.
+- Add `spec.targetNamespace: external-dns` so the pod and Secret share a namespace.
 
 4. Commit, sync, check logs:
 
@@ -355,9 +411,10 @@ Update `manifests/public-ingress.yaml`:
    ```yaml
    annotations:
      cert-manager.io/cluster-issuer: letsencrypt-staging   # switch to -prod after success
-     # if not using --default-targets:
+     # NLB IP comes from HelmRelease extraArgs.default-targets — do not also set:
      # external-dns.alpha.kubernetes.io/target: "<nlb_public_ip>"
-     external-dns.alpha.kubernetes.io/hostname: app.example.com   # only if you need an explicit override
+     # hostname is taken from spec.rules[].host; override only if needed:
+     # external-dns.alpha.kubernetes.io/hostname: app.example.com
    ```
 
 4. Keep existing paths (`/one`, `/two`, …) and `ingressClassName: nginx`.

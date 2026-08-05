@@ -103,6 +103,15 @@ rm -f .wg-keys.env
 """
 
 
+[tasks."render-public-ingress"]
+description = "Renders public ingress with NLB IP"
+run = """
+NLB_IP=$(terraform -chdir=tf output load_balancer_public_ip)
+
+sed -e 's|${NLB_IP}|'"${NLB_IP}"'|g' \
+  manifests/public-ingress.yaml.tmpl > manifests/public-ingress.yaml
+"""
+
 [tasks."setup-fluxcd"]
 env.GITHUB_TOKEN = { required = "Github token required for fluxcd setup" }
 env.GITHUB_USER  = { required = "Github username required for fluxcd setup" }
