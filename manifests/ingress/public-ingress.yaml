@@ -9,6 +9,9 @@ metadata:
     external-dns.alpha.kubernetes.io/target: "139.185.35.4"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts: [polywhale.cc]
+      secretName: polywhale-cc-tls
   rules:
     - host: polywhale.cc
       http:
