@@ -40,3 +40,4 @@ spec:
             name: cloudflare-api-token
             key: api-token
     extraArgs:
+      - --exclude-target-net=10.0.0.0/8
