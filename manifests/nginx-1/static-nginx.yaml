@@ -9,8 +9,7 @@ data:
         listen 80;
         location / {
             default_type text/html;
-            return 200 'Hello, Evgeny!';
-            add_header Content-Type text/html;
+            return 200 '<!DOCTYPE html><html><body><p>Hello, Evgeny!</p></body></html>';
         }
     }
 ---
