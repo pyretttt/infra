@@ -7,9 +7,10 @@ spec:
   interval: 1m
   path: ./manifests/ingress
   prune: true
+  # ingress-nginx is a HelmRelease under the apps Kustomization (healthChecked there),
+  # not a Flux Kustomization — depending on it by name blocks reconcile forever.
   dependsOn:
     - name: apps
-    - name: ingress-nginx
   sourceRef:
     kind: GitRepository
     name: flux-system
