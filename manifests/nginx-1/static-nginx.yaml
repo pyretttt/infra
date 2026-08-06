@@ -9,7 +9,7 @@ data:
         listen 80;
         location / {
             return 200 'Hello, Evgeny!';
-            add_header Content-Type text/htlm;
+            add_header Content-Type text/html;
         }
     }
 ---
