@@ -5,10 +5,13 @@ metadata:
   namespace: default
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    cert-manager.io/cluster-issuer: letsencrypt-staging
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     external-dns.alpha.kubernetes.io/target: ${NLB_IP}
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts: [polywhale.cc]
+      secretName: polywhale-cc-tls
   rules:
     - host: polywhale.cc
       http:
