@@ -9,6 +9,7 @@ spec:
   prune: true
   dependsOn:
     - name: apps
+    - name: ingress-nginx
   sourceRef:
     kind: GitRepository
     name: flux-system
