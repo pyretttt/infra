@@ -5,6 +5,8 @@ metadata:
   namespace: flux-system
 spec:
   interval: 12h
+  # Stays in default so the existing SOPS Secret (cloudflare-api-token) mounts without re-encrypt.
+  # Move both to namespace external-dns later with: mise run age-encrypt manifests/external-dns/secret.yaml
   targetNamespace: default
   releaseName: external-dns
   chart:
@@ -19,11 +21,11 @@ spec:
   values:
     resources:
       requests:
-        memory: 128Mi
-        cpu: 50m
+        memory: 32Mi
+        cpu: 10m
       limits:
-        memory: 256Mi
-        cpu: 100m
+        memory: 64Mi
+        cpu: 50m
     provider:
       name: cloudflare
     policy: sync
@@ -38,4 +40,3 @@ spec:
             name: cloudflare-api-token
             key: api-token
     extraArgs:
-      - --exclude-target-net=10.0.0.0/8

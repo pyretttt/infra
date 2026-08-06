@@ -10,23 +10,23 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - http:
-        host: polywhale.com
+    - host: polywhale.cc
+      http:
         paths:
-        - path: /one
-          pathType: Prefix
-          backend:
-            service:
-              name: static-nginx-service-1
-              port:
-                number: 80
-    - http:
-        host: polywhale.com
+          - path: /one
+            pathType: Prefix
+            backend:
+              service:
+                name: static-nginx-service-1
+                port:
+                  number: 80
+    - host: polywhale.cc
+      http:
         paths:
-        - path: /two
-          pathType: Prefix
-          backend:
-            service:
-              name: static-nginx-service-2
-              port:
-                number: 80
+          - path: /two
+            pathType: Prefix
+            backend:
+              service:
+                name: static-nginx-service-2
+                port:
+                  number: 80
