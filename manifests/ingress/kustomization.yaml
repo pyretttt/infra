@@ -1,5 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- internal-ingress.yaml
+# Internal ingress is not used in this cluster yet
+# - internal-ingress.yaml
 - public-ingress.yaml
