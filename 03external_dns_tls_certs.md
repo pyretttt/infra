@@ -109,68 +109,9 @@ In Cloudflare (or any DNS provider): create **one** A/AAAA for the public hostna
 
 **Fit:** Lighter alternative when there is only one public hostname and you are fine creating the A/AAAA once by hand.
 
----
 
-## 3. Cloudflare proxy + Origin CA
-
-Orange-cloud the record so **public DNS resolves to Cloudflare**, not the NLB. Cloudflare terminates browser TLS; it then connects to the NLB as origin. Install a long-lived [Cloudflare Origin CA](https://developers.cloudflare.com/ssl/origin-configuration/origin-ca/) cert as a TLS Secret on ingress-nginx and set SSL mode to **Full (strict)**.
-
-**Pros:** Tiny cluster footprint (no ACME renewals, no LE rate limits); DDoS/WAF in front of the free-tier NLB.
-
-**Cons:** Violates R4 — clients no longer resolve/hit the OCI NLB directly. Origin CA is not a general public CA if you ever switch back to grey-cloud; less “k8s-native” status than cert-manager `Certificate` objects.
-
-**Fit:** Only if you explicitly want Cloudflare in the data path; not the default for this NLB-based edge.
-
----
-
-## 4. Cloudflare Tunnel
-
-`cloudflared` in-cluster publishes apps to Cloudflare; DNS and edge TLS are handled there. No need for public :80/:443 on the NLB for HTTP(S) (WireGuard listener can remain).
-
-**Pros:** Strong automation + optional Access auth; no Let's Encrypt on origin; no exposure of node ports for web.
-
-**Cons:** Sidesteps the NLB edge you already built; private DNS / WireGuard story from stages 01–02 stays separate; another daemon and Cloudflare app dependency; harder to debug “is it tunnel, ingress, or app?”
-
-**Fit:** Only if you deliberately want to retire public HTTP(S) on the NLB — not the incremental next step.
-
----
-
-## 5. Traefik / Caddy with built-in ACME
-
-Ingress controller does ACME itself (no cert-manager). ExternalDNS (or manual DNS) still needed for names.
-
-**Pros:** One less operator if you were greenfield on Traefik/Caddy.
-
-**Cons:** You already run **two** ingress-nginx controllers (public + internal) under Flux. Replacing them is a migration, not a cert add-on. Worse R7/R6 for this repo.
-
-**Fit:** Reject unless you plan to drop nginx entirely.
-
----
-
-## 6. DIY certbot / acme.sh CronJob
-
-CronJob runs ACME, writes a TLS Secret, Ingress references it. DNS stays manual or scripted.
-
-**Pros:** Minimal continuous footprint between renewals.
-
-**Cons:** Custom scripting, weak status model, easy to break renewals silently — poor R5/R6 compared to cert-manager.
-
-**Fit:** Avoid for a GitOps cluster.
-
----
-
-## 7. Self-signed / mkcert only
-
-Fine for in-cluster or WireGuard-only experiments; browsers will warn on the public NLB path.
-
-**Fit:** Not for public HTTPS. Out of scope for this stage's goal.
-
----
-
-# Recommendation
+# Preferred: Variant
 ***
-
-**Preferred: Variant 1** — Cert-Manager + ExternalDNS (Cloudflare DNS) + TLS at ingress-nginx (HTTP-01).
 
 ```text
 app.example.com  A/AAAA  →  <nlb_public_ip>   # ExternalDNS upserts; DNS-only (grey-cloud)
@@ -178,10 +119,6 @@ Internet → OCI NLB :80/:443 → NodePort → ingress-nginx (LE cert) → Servi
 ```
 
 Same edge as today: Cloudflare only hosts DNS; record **content** is the OCI NLB public IP; TLS terminates on ingress-nginx behind the NLB.
-
-**Also keep Variant 2 ready** — same cert-manager path, but one manual A/AAAA instead of ExternalDNS. Use it if you want fewer pods now and only one public hostname forever. Upgrading 2 → 1 later is adding ExternalDNS + a Cloudflare token; the ClusterIssuer and Ingress `tls:` block stay the same.
-
-**Shared choices for either variant**
 
 - Prefer **HTTP-01** while NLB :80 stays open; DNS-01 only if you need wildcards or close :80.
 - Let's Encrypt **staging** issuer first, then production (avoid rate limits).
@@ -191,48 +128,8 @@ Same edge as today: Cloudflare only hosts DNS; record **content** is the OCI NLB
 
 **Skip:** Cloudflare Tunnel and orange-cloud Origin CA (both pull clients off direct NLB access), Traefik/Caddy swap, DIY CronJobs.
 
----
-
-# Free domains?
-***
-
-**Short answer:** a true free **apex** domain (your own `something.tld` at the registry) is basically gone as a reliable option. **Free DNS hosting** (Cloudflare) is free, but you still need a domain (or a free **subdomain**) to point at the NLB. Let's Encrypt does **not** care whether the name was paid — only that HTTP-01 or DNS-01 succeeds.
-
-## What is free vs not
-
-| Piece | Free? | Notes |
-|-------|-------|-------|
-| Cloudflare DNS + API | Yes | Hosts the zone; does **not** register a domain for you |
-| Let's Encrypt cert | Yes | Works for any name you control (rate limits apply) |
-| Apex domain (`.com`, `.dev`, …) | No (normally) | Pay a registrar; first-year promos often ~$1–15 |
-| Freenom (`.tk` / `.cf` / `.gq`, …) | No longer free | Was the classic free apex path; now paid / unreliable — do not plan on it |
-| Free **subdomain** under someone else's zone | Sometimes | See below; often enough for a homelab / Always Free cluster |
-
-## Free / cheap name options that can work
-
-1. **Cheap paid apex (recommended for Variant 1)**  
-   Register any low-cost TLD, set nameservers to Cloudflare, then run ExternalDNS + cert-manager as documented. Cloudflare stays free; the domain fee is the only recurring cost. Best fit for GitOps + Cloudflare API token.
-
-2. **Free subdomain (eu.org, FreeDNS, DuckDNS, “is-a.dev”-style projects, …)**  
-   You get `you.something.org` (or similar), not a full TLD. Approval can be slow (eu.org is manual and may take weeks). Fine for learning HTTPS on the NLB path.
-
-3. **Promo / education packs**  
-   Occasional first-year free or student/GitHub education domain credits. Treat renewal price as the real cost.
-
-## Fit with Variant 1 vs 2
-
-- **Variant 1 (ExternalDNS + Cloudflare)** needs a zone whose **nameservers you can point at Cloudflare** (or another provider ExternalDNS supports with an API). Most free-subdomain schemes **do not** let you change NS → ExternalDNS cannot manage them via Cloudflare. Prefer a cheap apex on Cloudflare, or skip ExternalDNS.
-- **Variant 2 (manual DNS)** works with almost any free subdomain provider: create one A record → NLB public IP, grey-cloud / no proxy, then HTTP-01. No Cloudflare token required.
-- **IP-only / `nip.io`-style names** can prove TLS in a pinch but are awkward for real public URLs and are a poor long-term choice for this stage.
-
-**Practical pick for this repo:** buy a cheap apex, park it on Cloudflare (DNS-only records → NLB), then follow Variant 1. Use a free subdomain + Variant 2 only if you want zero domain spend and accept provider quirks.
-
----
-
 # Implementation steps
 ***
-
-Pick **one** of the two variants below. Shared prerequisites apply to both.
 
 ## 0. Shared prerequisites
 
@@ -518,14 +415,37 @@ ClusterIssuers and the Ingress `tls:` block do not need to change.
 
 ---
 
-## Quick comparison (ops)
+## Implementatation notes comparison (ops)
 
-| Step | Variant 1 | Variant 2 |
-|------|-----------|-----------|
-| cert-manager + ClusterIssuer | Yes | Yes |
-| Cloudflare API token (SOPS) | Yes | No (HTTP-01) |
-| ExternalDNS controller | Yes; must target NLB IP | No |
-| Public A/AAAA | Automated | Manual once |
-| Ingress `tls:` + issuer annotation | Yes | Yes |
-| Footprint | Higher (R2 partial) | Lowest that still meets R5 |
-| Best when | Multiple public names / want DNS in GitOps | Single public host, set-and-forget DNS |
+External-DNS configures Cloudflare DNS record for ingress resource. It updates domains by `spec.rules[*].host` the content of the record is taken from `metadata.external-dns.alpha.kubernetes.io/target`. It's crucial to set `-exclude-target-net=10.0.0.0/8` in the external-dns `HelmRelease` otherwise it have been also adding node's cluster IP as DNS record.
+
+Configuration of `cert-manager` requires to create one stage _(for debugging)_ and one prod `Issuer/ClusterIssuer` specifying `spec.acme.privateKeySecretRef.name` _(name of the secret that cert-manager will automatically create)_ and solver `spec.acme.solvers[*]` http01 or dns01.
+
+Using http01 solver only thing left is to choose `Issuer/ClusterIssuer` at the nginx ingress side `metadata.annotations.cert-manager.io/cluster-issuer` and specify `spec.tls` with host names. You can add subdomains of cloudflare dns domain.
+
+```yaml
+  tls:
+    - hosts: [test.domain.cc, domain.cc]
+  rules:
+    - host: test.domain.cc
+      ...
+    - host: domain.cc
+      ...
+```
+
+Let's Encrypt issues fixed ~90-day certs and ignores custom duration
+
+```yaml
+annotations:
+  cert-manager.io/duration: 2160h   # 90d — requested lifetime
+  cert-manager.io/renew-before: 360h # renew 15d before expiry
+```
+
+Also `Ingress` with `tls` by default redirect HTTP to HTTPS. Similar to
+
+```yaml
+annotations:
+  nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  # optional: also redirect if a proxy set X-Forwarded-Proto
+  nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+```
