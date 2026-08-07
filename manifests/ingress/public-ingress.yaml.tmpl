@@ -10,10 +10,10 @@ metadata:
 spec:
   ingressClassName: nginx
   tls:
-    - hosts: [polywhale.cc]
+    - hosts: [test.polywhale.cc, polywhale.cc]
       secretName: polywhale-cc-tls
   rules:
-    - host: polywhale.cc
+    - host: test.polywhale.cc
       http:
         paths:
           - path: /one
