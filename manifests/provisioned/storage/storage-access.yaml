@@ -57,7 +57,7 @@ spec:
   csi:
     driver: blockvolume.csi.oraclecloud.com
     fsType: ext4
-    volumeHandle: ocid1.volume.oc1.me-dubai-1.abshqljrzz3c3mvlhrwk54bpqd4fwqilzjjwmsll6bylpsmiauudmupbpovq
+    volumeHandle: ocid1.volume.oc1.me-dubai-1.abshqljrnze5ncvevupubanfdtb3ughkakea5gbuknlyeskfv6l7rtlcy3bq
   nodeAffinity:
     required:
       nodeSelectorTerms:

@@ -67,7 +67,7 @@ resource "oci_containerengine_node_pool" "k8s_node_pool" {
 
   node_config_details {
     placement_configs {
-      availability_domain = data.oci_identity_availability_domains.ads.availability_domains[count.index].name
+      availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
       subnet_id           = oci_core_subnet.vcn_private_subnet.id
     }
     size          = var.arm_pool_size
@@ -103,7 +103,7 @@ resource "oci_artifacts_container_repository" "docker_repository" {
 }
 
 resource "oci_core_volume" "arm_instance_volume" {
-  count          = var.arm_pool_size
+  count          = var.arm_pool_size * var.arm_pool_count
   compartment_id = var.compartment_id
 
   availability_domain = var.ad_list[count.index]

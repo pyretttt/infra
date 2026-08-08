@@ -6,12 +6,12 @@ variable "k8s_version" {
 variable "arm_pool_count" {
   type        = number
   description = "The number of instances pools."
-  default     = 1
+  default     = 2
 }
 variable "arm_pool_size" {
   type        = number
   description = "The number of ARM instances in a pool."
-  default     = 2
+  default     = 1
 }
 variable "arm_pool_images" {
   type        = list(string)
