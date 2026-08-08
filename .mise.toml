@@ -118,6 +118,23 @@ sed -e 's|${NLB_IP}|'"${NLB_IP}"'|g' \
   manifests/ingress/public-ingress.yaml.tmpl > manifests/ingress/public-ingress.yaml
 """
 
+[tasks."render:grafana-secret"]
+description = "Renders grafana secret"
+env.GRAFANA_USER = "{{ env.GRAFANA_USER | default(value='admin') }}"
+env.GRAFANA_PASS = "{{ env.GRAFANA_PASS | default(value=exec(command='openssl rand -base64 16')) }}"
+
+run = """
+if [ -f manifests/kube-prom-stack/grafana-secret.yaml ]; then
+  echo "Credentials already exists"
+  exit 0
+fi
+sed -e 's|${GRAFANA_USER}|'"${GRAFANA_USER}"'|g' \
+    -e 's|${GRAFANA_PASS}|'"${GRAFANA_PASS}"'|g' \
+  manifests/kube-prom-stack/grafana-secret.yaml.tmpl > manifests/kube-prom-stack/grafana-secret.yaml
+
+mise run age:encrypt --file manifests/kube-prom-stack/grafana-secret.yaml
+"""
+
 [tasks."render:all"]
 description = "Renders all templates"
 run = [

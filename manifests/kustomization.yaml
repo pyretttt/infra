@@ -15,3 +15,6 @@ resources:
 - external-dns/helmrepository.yaml
 - external-dns/helmrelease.yaml
 - external-dns/secret.yaml
+- kube-prom-stack/helmrepository.yaml
+- kube-prom-stack/helmrelease.yaml
+- kube-prom-stack/grafana-secret.yaml
