@@ -68,6 +68,15 @@ printf 'SERVER_PRIV=%s\nSERVER_PUB=%s\nCLIENT_PRIV=%s\nCLIENT_PUB=%s\n' \
   "$SERVER_PRIV" "$SERVER_PUB" "$CLIENT_PRIV" "$CLIENT_PUB" > .wg-keys.env
 """
 
+[tasks."get-grafana-creds"]
+description = "Outputs grafana credentials into stdin"
+run = """
+GRAFANA_USER=$(kubectl get secret grafana-admin -o jsonpath="{.data.admin-user}" | base64 -d)
+GRAFANA_PASS=$(kubectl get secret grafana-admin -o jsonpath="{.data.admin-password}" | base64 -d)
+echo "Username: ${GRAFANA_USER}"
+echo "Password: ${GRAFANA_PASS}"
+"""
+
 # ============  Template Rendering  =============
 
 [tasks."render:wg-config"]
