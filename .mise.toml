@@ -95,7 +95,7 @@ sed -e 's|${SERVER_PRIV}|'"${SERVER_PRIV}"'|g' \
 mise run age:encrypt --file manifests/wg/wg-config.yaml
 
 INTERNAL_DNS_IP=$(kubectl --kubeconfig ${KUBECONFIG} get svc internal-coredns -n internal-dns -o jsonpath='{.spec.clusterIPs[0]}')
-GATEWAY_IP=$(terraform -chdir=tf output load_balancer_public_ip)
+GATEWAY_IP=$(terraform -chdir=tf output -raw load_balancer_public_ip)
 
 sed -e 's|${CLIENT_PRIV}|'"${CLIENT_PRIV}"'|g' \
     -e 's|${SERVER_PUB}|'"${SERVER_PUB}"'|g' \
