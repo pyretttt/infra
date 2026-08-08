@@ -73,7 +73,7 @@ printf 'SERVER_PRIV=%s\nSERVER_PUB=%s\nCLIENT_PRIV=%s\nCLIENT_PUB=%s\n' \
 [tasks."render:wg-config"]
 description = "Renders wireguard configs"
 run = """
-if [ -f manifests/wg/wg-config.yaml && -f wg-client.yaml ]; then
+if [ -f manifests/wg/wg-config.yaml ] && [ -f wg-client.yaml ]; then
     echo Wireguard Already configured - skip setup
     exit 0
 fi
@@ -95,10 +95,12 @@ sed -e 's|${SERVER_PRIV}|'"${SERVER_PRIV}"'|g' \
 mise run age:encrypt --file manifests/wg/wg-config.yaml
 
 INTERNAL_DNS_IP=$(kubectl --kubeconfig ${KUBECONFIG} get svc internal-coredns -n internal-dns -o jsonpath='{.spec.clusterIPs[0]}')
+GATEWAY_IP=$(terraform -chdir=tf output load_balancer_public_ip)
 
 sed -e 's|${CLIENT_PRIV}|'"${CLIENT_PRIV}"'|g' \
     -e 's|${SERVER_PUB}|'"${SERVER_PUB}"'|g' \
     -e 's|${INTERNAL_DNS_IP}|'"${INTERNAL_DNS_IP}"'|g' \
+    -e 's|${GATEWAY_IP}|'"${GATEWAY_IP}"'|g' \
   wg-client.yaml.tmpl > wg-client.yaml
 
 mise run age:encrypt --file wg-client.yaml
