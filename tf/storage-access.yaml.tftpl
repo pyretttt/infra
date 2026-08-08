@@ -21,6 +21,10 @@ spec:
     required:
       nodeSelectorTerms:
         - matchExpressions:
+            - key: name
+              operator: In
+              values:
+                - k8s-cluster-pool-${vol.index}
             - key: topology.kubernetes.io/zone
               operator: In
               values:
