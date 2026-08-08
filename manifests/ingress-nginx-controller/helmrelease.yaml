@@ -29,6 +29,13 @@ spec:
         enabled: true
       labels:
         ingress-tier: public
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -68,3 +75,10 @@ spec:
         enabled: false
       labels:
         ingress-tier: internal
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi

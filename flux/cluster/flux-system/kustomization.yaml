@@ -6,3 +6,19 @@ resources:
 - manifests.yaml
 - cert-issuers.yaml
 - ingress.yaml
+# Always Free: default Flux requests (50–100m × 4) crowd node request budgets.
+# Patch here (not gotk-components.yaml) so flux bootstrap upgrades keep the tweak.
+patches:
+  - target:
+      kind: Deployment
+      name: "(source-controller|kustomize-controller|helm-controller|notification-controller)"
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 20m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi

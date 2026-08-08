@@ -106,10 +106,11 @@ spec:
               containerPort: 8181
           resources:
             requests:
-              memory: 128Mi
+              cpu: 10m
+              memory: 64Mi
             limits:
-              cpu: 100m
-              memory: 128Mi
+              cpu: 50m
+              memory: 64Mi
           livenessProbe:
             httpGet:
               path: /health

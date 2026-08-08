@@ -112,6 +112,14 @@ spec:
         limits:
           cpu: 200m
           memory: 256Mi
+      sidecar:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 50m
+            memory: 64Mi
       # Phase 2: plugins: [oci-metrics-datasource]
 
     # --- Prometheus ---
@@ -147,7 +155,7 @@ spec:
                 subPath: prometheus
         resources:
           requests:
-            cpu: 100m
+            cpu: 50m
             memory: 1280Mi
           limits:
             cpu: 500m
@@ -156,11 +164,20 @@ spec:
     prometheusOperator:
       resources:
         requests:
-          cpu: 50m
-          memory: 128Mi
+          cpu: 20m
+          memory: 64Mi
         limits:
-          cpu: 150m
+          cpu: 100m
           memory: 128Mi
+      # Shared by Prometheus + Alertmanager config-reloader sidecars.
+      prometheusConfigReloader:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 50m
+            memory: 64Mi
 
     kube-state-metrics:
       resources:
