@@ -92,7 +92,7 @@ sed -e 's|${SERVER_PRIV}|'"${SERVER_PRIV}"'|g' \
     -e 's|${CLIENT_PUB}|'"${CLIENT_PUB}"'|g' \
   manifests/wg/wg-config.yaml.tmpl > manifests/wg/wg-config.yaml
 
-mise run age-encrypt --file manifests/wg/wg-config.yaml
+mise run age:encrypt --file manifests/wg/wg-config.yaml
 
 INTERNAL_DNS_IP=$(kubectl --kubeconfig ${KUBECONFIG} get svc internal-coredns -n internal-dns -o jsonpath='{.spec.clusterIPs[0]}')
 
@@ -101,7 +101,7 @@ sed -e 's|${CLIENT_PRIV}|'"${CLIENT_PRIV}"'|g' \
     -e 's|${INTERNAL_DNS_IP}|'"${INTERNAL_DNS_IP}"'|g' \
   wg-client.yaml.tmpl > wg-client.yaml
 
-mise run age-encrypt --file wg-client.yaml
+mise run age:encrypt --file wg-client.yaml
 
 rm -f .wg-keys.env
 """
@@ -113,7 +113,7 @@ run = """
 NLB_IP=$(terraform -chdir=tf output load_balancer_public_ip)
 
 sed -e 's|${NLB_IP}|'"${NLB_IP}"'|g' \
-  manifests/public-ingress.yaml.tmpl > manifests/public-ingress.yaml
+  manifests/ingress/public-ingress.yaml.tmpl > manifests/ingress/public-ingress.yaml
 """
 
 [tasks."render:all"]
