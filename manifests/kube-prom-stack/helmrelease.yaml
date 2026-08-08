@@ -74,6 +74,11 @@ spec:
         paths:
           - /
         pathType: Prefix
+      # Required for internal-dns
+      service:
+        nameOverride: "alertmanager"
+        labels:
+          internal-dns: enabled
       alertmanagerSpec:
         replicas: 1
         resources:
@@ -98,6 +103,11 @@ spec:
         type: pvc
         existingClaim: main-ad1
         subPath: grafana
+      # Required for internal-dns
+      service:
+        nameOverride: "grafana"
+        labels:
+          internal-dns: enabled
       ingress:
         enabled: true
         ingressClassName: nginx-internal
@@ -116,6 +126,11 @@ spec:
 
     # --- Prometheus ---
     prometheus:
+      # Required for internal-dns
+      service:
+        nameOverride: "prometheus"
+        labels:
+          internal-dns: enabled
       ingress:
         enabled: true
         ingressClassName: nginx-internal
