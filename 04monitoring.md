@@ -35,7 +35,7 @@ These are **whole disks**, not a shared pool you can carve into many independent
 - Pattern: **one durable disk per pool** — `main-ad1` ↔ pool-0, `main-ad2` ↔ pool-1. PV affinity is already set; **workloads** that mount a claim must mirror the same `name` label (see below) so the scheduler does not thrash on RWO attach.
 - Sharing one PVC among several pods is fine **only on that one node** (same RWO volume). `subPath` can isolate directories on the same disk; it does **not** create separate PVCs or free “remaining” quota for Prometheus.
 
-**Decision: Prometheus and Grafana must not be ephemeral.** Bind them to the **existing** static PVCs (`main-ad1` / `main-ad2`), with matching pool `nodeSelector` and `subPath` if sharing a disk. Grafana: `persistence.existingClaim`. Prometheus: `volumes`/`volumeMounts` on that claim (Operator has no `existingClaim`). Do not use emptyDir for Prom/Grafana data.
+**Decision: Prometheus and Grafana must not be ephemeral.** Bind them to the **existing** static PVCs (`main-ad1` / `main-ad2`), with matching pool `nodeSelector` and `subPath` if sharing a disk. Grafana: `persistence.existingClaim`. Prometheus: PVC `volumes` + `containers` mount patch on `/prometheus` (Operator has no `existingClaim`; do not set `additionalArgs.storage.tsdb.path`). Do not use emptyDir for Prom/Grafana data.
 
 That means:
 
@@ -84,7 +84,7 @@ spec:
             claimName: main-ad1
 ```
 
-For kube-prometheus-stack, pin **Prometheus and Grafana** with `nodeSelector: name: k8s-cluster-pool-N` and mount the matching claim (`main-ad1` / `main-ad2`) with distinct `subPath`s. Grafana has native `persistence.existingClaim`; Prometheus Operator does **not** — use `volumes` + `volumeMounts` + `additionalArgs.storage.tsdb.path` (see HelmRelease example below). **No emptyDir** for Prometheus TSDB or Grafana data.
+For kube-prometheus-stack, pin **Prometheus and Grafana** with `nodeSelector: name: k8s-cluster-pool-N` and mount the matching claim (`main-ad1` / `main-ad2`) with distinct `subPath`s. Grafana has native `persistence.existingClaim`; Prometheus Operator does **not** — add a PVC `volumes` entry and **patch** the prometheus container’s `/prometheus` mount via `containers` (do **not** use `additionalArgs.storage.tsdb.path`; the operator already owns that flag and will refuse to reconcile). **No emptyDir** for Prometheus TSDB or Grafana data.
 
 (`affinity.nodeAffinity` on the same `name` key works if you prefer it over `nodeSelector`.)
 
@@ -224,7 +224,7 @@ Paste / tune under `spec.values`. PVCs `main-ad1` / `main-ad2` are in **`default
 |------|---------|------------|
 | Target PVC / pool | `main-ad1` + `k8s-cluster-pool-0` **or** `main-ad2` + `k8s-cluster-pool-1` | **`main-ad1` / pool-0** |
 | Grafana persistence | (A) off / emptyDir · (B) new PVC via `storageClassName`+`size` · (C) `existingClaim` + `subPath` | **(C)** `existingClaim: main-ad1`, `subPath: grafana` |
-| Prometheus persistence | (A) default emptyDir · (B) `storageSpec.volumeClaimTemplate` (new PVC) · (C) `volumes`/`volumeMounts` on existing claim + `additionalArgs: storage.tsdb.path` | **(C)** — Operator has **no** `existingClaim`; do not use (B) |
+| Prometheus persistence | (A) default emptyDir · (B) `storageSpec.volumeClaimTemplate` (new PVC) · (C) `volumes` + `containers[].volumeMounts` patch on `/prometheus` | **(C)** — never `additionalArgs.storage.tsdb.path` (operator rejects it → no StatefulSet → Ingress 503) |
 | Alertmanager persistence | ephemeral · new PVC · existing claim + subPath | **ephemeral** for phase 1 |
 | Retention | `12h`–`24h`; optional `retentionSize` | **`24h`** + `retentionSize: 20GB` |
 | Node exporter | off · on (chart defaults) · on + tight caps | **on + tight** (`10m/32Mi` req, `50m/64Mi` lim) — remaining CPU/RAM |
@@ -305,17 +305,17 @@ values:
       nodeSelector:
         name: k8s-cluster-pool-0
       # No storageSpec.volumeClaimTemplate — that would create a *new* PVC.
-      additionalArgs:
-        - name: storage.tsdb.path
-          value: /data
+      # No additionalArgs.storage.tsdb.path — operator-managed; causes reconcile failure.
       volumes:
         - name: prometheus-data
           persistentVolumeClaim:
             claimName: main-ad1
-      volumeMounts:
-        - name: prometheus-data
-          mountPath: /data
-          subPath: prometheus
+      containers:
+        - name: prometheus
+          volumeMounts:
+            - name: prometheus-data
+              mountPath: /prometheus
+              subPath: prometheus
       resources:
         requests: { cpu: 100m, memory: 512Mi }
         limits:   { cpu: 500m, memory: 1536Mi }
@@ -331,7 +331,7 @@ values:
       limits:   { cpu: 100m, memory: 128Mi }
 ```
 
-**Why Prometheus looks different from Grafana:** Grafana’s subchart accepts `persistence.existingClaim`. Prometheus Operator only knows `storageSpec.volumeClaimTemplate` (always a **new** PVC) or emptyDir. Mounting `main-ad1` with a custom TSDB path is the way to reuse the static claim and share the disk via `subPath`.
+**Why Prometheus looks different from Grafana:** Grafana’s subchart accepts `persistence.existingClaim`. Prometheus Operator only knows `storageSpec.volumeClaimTemplate` (always a **new** PVC) or emptyDir. Reuse `main-ad1` by adding a volume and strategically merging a `/prometheus` mount onto the prometheus container — do not override `--storage.tsdb.path` via `additionalArgs`.
 
 Swap to pool-1 by changing every `main-ad1` → `main-ad2` and every `k8s-cluster-pool-0` → `k8s-cluster-pool-1`.
 

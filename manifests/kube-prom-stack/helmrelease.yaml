@@ -132,19 +132,19 @@ spec:
         evaluationInterval: 30s
         nodeSelector:
           name: k8s-cluster-pool-0
-        # Leave storageSpec unset/empty so operator does not create a PVC.
-        # Mount existing claim at a path other than the default emptyDir /prometheus.
-        additionalArgs:
-          - name: storage.tsdb.path
-            value: /data
+        # Existing PVC: do NOT set additionalArgs.storage.tsdb.path — operator already
+        # manages that flag and refuses to reconcile (no StatefulSet → Ingress 503).
+        # Patch the prometheus container mount at /prometheus onto main-ad1 instead.
         volumes:
           - name: prometheus-data
             persistentVolumeClaim:
               claimName: main-ad1
-        volumeMounts:
-          - name: prometheus-data
-            mountPath: /data
-            subPath: prometheus
+        containers:
+          - name: prometheus
+            volumeMounts:
+              - name: prometheus-data
+                mountPath: /prometheus
+                subPath: prometheus
         resources:
           requests:
             cpu: 100m
