@@ -43,7 +43,15 @@ data:
   Corefile: |
     polywhale.com:53 {
         errors
-        # <service>.polywhale.com -> <service>.default.svc.polywhale.com
+        # Ingress Host names → internal nginx controller Service (not backends).
+        # Flow: dig grafana.polywhale.com → ClusterIP of ingress-nginx-internal-controller
+        #       → nginx matches Host → backend Service.
+        # Add new Ingress hosts to this regex (or they will miss unless a same-named Service exists).
+        rewrite stop {
+            name regex ^(grafana|prometheus|alertmanager)\.polywhale\.com\.$ ingress-nginx-internal-controller.default.svc.polywhale.com.
+            answer auto
+        }
+        # Direct Service publish: <service>.polywhale.com → Service in default with label.
         # Only single-label names are rewritten so full *.*.svc.* names still work.
         rewrite stop {
             name regex ^([^.]+)\.polywhale\.com\.$ {1}.default.svc.polywhale.com.

@@ -54,8 +54,13 @@ spec:
         default: false
         controllerValue: k8s.io/ingress-nginx-internal
       ingressClass: nginx-internal
+      # WireGuard clients resolve Ingress hosts (grafana/prometheus/…) to this
+      # ClusterIP; nginx then routes by Host. CoreDNS only indexes Services.
       service:
-        enabled: false
+        enabled: true
+        type: ClusterIP
+        labels:
+          internal-dns: enabled
       publishService:
         enabled: false
       # Public controller owns the cluster validating webhook; keep this one off.
