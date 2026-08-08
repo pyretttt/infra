@@ -8,6 +8,9 @@ sops = "latest"
 terraform = "latest"
 # additionally openssl
 
+[env]
+KUBECONFIG = "tf/.kube.config"
+
 [tasks."oci-provision"]
 description = "creates oci k8s free infrastructure"
 dir = "tf"
@@ -29,12 +32,11 @@ terraform apply
 
 [tasks."k9s"]
 description = "runs k9s with provisioned cluster config"
-dir = "tf"
 run = """
-if [ -f ".kube.config" ]; then
-    k9s --kubeconfig .kube.config
+if [ -f "${KUBECONFIG}" ]; then
+    k9s --kubeconfig ${KUBECONFIG}
 else
-    echo ".kube.config file does not exist"
+    echo "${KUBECONFIG} file does not exist"
     exit 1
 fi
 """
@@ -66,7 +68,9 @@ printf 'SERVER_PRIV=%s\nSERVER_PUB=%s\nCLIENT_PRIV=%s\nCLIENT_PUB=%s\n' \
   "$SERVER_PRIV" "$SERVER_PUB" "$CLIENT_PRIV" "$CLIENT_PUB" > .wg-keys.env
 """
 
-[tasks."render-wg-config"]
+# ============  Template Rendering  =============
+
+[tasks."render:wg-config"]
 description = "Renders wireguard configs"
 run = """
 if [ -f manifests/wg/wg-config.yaml && -f wg-client.yaml ]; then
@@ -90,7 +94,7 @@ sed -e 's|${SERVER_PRIV}|'"${SERVER_PRIV}"'|g' \
 
 mise run age-encrypt --file manifests/wg/wg-config.yaml
 
-INTERNAL_DNS_IP=$(kubectl --kubeconfig tf/.kube.config get svc internal-coredns -n internal-dns -o jsonpath='{.spec.clusterIPs[0]}')
+INTERNAL_DNS_IP=$(kubectl --kubeconfig ${KUBECONFIG} get svc internal-coredns -n internal-dns -o jsonpath='{.spec.clusterIPs[0]}')
 
 sed -e 's|${CLIENT_PRIV}|'"${CLIENT_PRIV}"'|g' \
     -e 's|${SERVER_PUB}|'"${SERVER_PUB}"'|g' \
@@ -103,7 +107,7 @@ rm -f .wg-keys.env
 """
 
 
-[tasks."render-public-ingress"]
+[tasks."render:public-ingress"]
 description = "Renders public ingress with NLB IP"
 run = """
 NLB_IP=$(terraform -chdir=tf output load_balancer_public_ip)
@@ -112,7 +116,16 @@ sed -e 's|${NLB_IP}|'"${NLB_IP}"'|g' \
   manifests/public-ingress.yaml.tmpl > manifests/public-ingress.yaml
 """
 
-[tasks."setup-fluxcd"]
+[tasks."render:all"]
+description = "Renders all templates"
+run = [
+    { task = "render:public-ingress" },
+    { task = "render:wg-config" }
+]
+
+# ============  Flux  =============
+
+[tasks."flux:bootstrap"]
 env.GITHUB_TOKEN = { required = "Github token required for fluxcd setup" }
 env.GITHUB_USER  = { required = "Github username required for fluxcd setup" }
 description = "Fluxcd configuration to reconcil this repo definitions from provisioned cluster"
@@ -123,10 +136,10 @@ flux bootstrap github \
   --branch=main \
   --path=./flux/cluster \
   --personal \
-  --kubeconfig tf/.kube.config
+  --kubeconfig ${KUBECONFIG}
 """
 
-[tasks."fluxcd-age-setup"]
+[tasks."flux:age-setup"]
 description = "Creates age key file; Creates cluster secret with created age file; Stores public age key in separate file; You should manually remove age file"
 run = """
 if [ -f "age_public_key" ]; then
@@ -134,16 +147,23 @@ if [ -f "age_public_key" ]; then
     exit 1
 fi
 
-age-keygen -o age.delete_me.agekey
+if [ -f "age.delete_me.agekey" ]; then
+  echo "Skip private key generation"
+else
+  age-keygen -o age.delete_me.agekey
+fi
+
 age-keygen -y age.delete_me.agekey > age_public_key
 cat age.delete_me.agekey |
-kubectl --kubeconfig tf/.kube.config create secret generic sops-age \
+kubectl --kubeconfig ${KUBECONFIG} create secret generic sops-age \
 --namespace=flux-system \
 --from-file=age.agekey=/dev/stdin \
---dry-run=client -o yaml | kubectl --kubeconfig tf/.kube.config apply -f -
+--dry-run=client -o yaml | kubectl --kubeconfig ${KUBECONFIG} apply -f -
 """
 
-[tasks."age-encrypt"]
+# ============  Age  =============
+
+[tasks."age:encrypt"]
 description = "Encrypts secret via sops and age public key"
 usage = '''
 flag "--file <file>" help="File to encrypt"
