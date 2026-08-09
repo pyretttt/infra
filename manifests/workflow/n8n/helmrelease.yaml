@@ -41,6 +41,23 @@ spec:
     #   enabled: true
 
     main:
+      extraEnv:
+        - name: N8N_BASIC_AUTH_USER
+          valueFrom:
+            secretKeyRef:
+              name: n8n-auth-creds
+              key: username
+        - name: N8N_BASIC_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: n8n-auth-creds
+              key: password
+        - N8N_ENCRYPTION_KEY:
+          valueFrom:
+            secretKeyRef:
+              name: n8n-secrets
+              key: encryption-key
+
       nodeSelector:
         name: k8s-cluster-pool-1
 
@@ -64,16 +81,6 @@ spec:
           secure_cookie: false
         generic:
           timezone: Europe/Moscow
-
-      # Prefer external Secret (see n8n-secret.yaml.tmpl) over chart-managed values in git.
-      extraEnv:
-        N8N_ENCRYPTION_KEY:
-          valueFrom:
-            secretKeyRef:
-              name: n8n-secrets
-              key: encryption-key
-        # WEBHOOK_URL:
-        #   value: "http://n8n.polywhale.com/"
 
       persistence:
         enabled: true

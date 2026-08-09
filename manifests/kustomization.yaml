@@ -24,3 +24,4 @@ resources:
 - workflow/n8n/helmrepo.yaml
 - workflow/n8n/helmrelease.yaml
 - workflow/n8n/n8n-secret.yaml
+- workflow/n8n/n8n-user-secret.yaml

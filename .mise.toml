@@ -185,6 +185,24 @@ sed -e 's|${N8N_ENCRYPTION_KEY}|'"${N8N_ENCRYPTION_KEY}"'|g' \
 mise run age:encrypt --file manifests/workflow/n8n/n8n-secret.yaml
 """
 
+[tasks."render:n8n-auth-creds"]
+description = "Renders N8N auth creds"
+env.N8N_USER = "{{ env.N8N_USER | default(value='admin') }}"
+env.N8N_PASS = "{{ env.N8N_PASS | default(value=exec(command='openssl rand -base64 16')) }}"
+
+run = """
+if [ -f manifests/workflow/n8n/n8n-user-secret.yaml ]; then
+  echo "Credentials already exists"
+  exit 0
+fi
+sed -e 's|${N8N_USER}|'"${N8N_USER}"'|g' \
+    -e 's|${N8N_PASS}|'"${N8N_PASS}"'|g' \
+  manifests/workflow/n8n/n8n-user-secret.yaml.tmpl > manifests/workflow/n8n/n8n-user-secret.yaml
+
+mise run age:encrypt --file manifests/workflow/n8n/n8n-user-secret.yaml
+"""
+
+
 
 [tasks."render:all"]
 description = "Renders all templates"
@@ -193,7 +211,8 @@ run = [
     { task = "render:wg-config" },
     { task = "render:grafana-secret" },
     { task = "render:dagu-secret" },
-    { task = "render:n8n-secret" }
+    { task = "render:n8n-secret" },
+    { task = "render:n8n-auth-creds" }
 ]
 
 # ============  Flux  =============
