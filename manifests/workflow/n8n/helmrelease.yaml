@@ -18,6 +18,8 @@ spec:
       interval: 2h
   values:
     image:
+      # CRI-O short-name mode requires a fully-qualified registry.
+      repository: docker.io/n8nio/n8n
       tag: "2.33.7"
 
     ingress:
@@ -45,13 +47,21 @@ spec:
       config:
         db:
           type: sqlite
+          sqlite:
+            vacuum_on_startup: true
+        executions:
+          data:
+            prune: true
+            max_age: 168
         n8n:
           hide_usage_page: true
-          # Required behind reverse proxy — pick host to match ingress above.
+          # Public URL bits for reverse proxy. Do NOT set port: 80 — that is
+          # N8N_PORT (listen port); chart maps it to containerPort, and
+          # non-root cannot bind <1024. Service port 80 → targetPort 5678.
           host: n8n.polywhale.com
           protocol: http
-          port: 80
           editor_base_url: http://n8n.polywhale.com/
+          secure_cookie: false
         generic:
           timezone: Europe/Moscow
 
