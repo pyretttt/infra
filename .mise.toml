@@ -203,7 +203,6 @@ mise run age:encrypt --file manifests/workflow/n8n/n8n-user-secret.yaml
 """
 
 
-
 [tasks."render:all"]
 description = "Renders all templates"
 run = [
