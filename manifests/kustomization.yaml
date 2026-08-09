@@ -21,3 +21,6 @@ resources:
 - workflow/dagu/helmrepo.yaml
 - workflow/dagu/helmrelease.yaml
 - workflow/dagu/dagu-secret.yaml
+- workflow/n8n/helmrepo.yaml
+- workflow/n8n/helmrelease.yaml
+- workflow/n8n/n8n-secret.yaml

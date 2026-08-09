@@ -1,0 +1,252 @@
+Name:               10.0.1.131
+Roles:              node
+Labels:             beta.kubernetes.io/arch=arm64
+                    beta.kubernetes.io/instance-type=VM.Standard.A1.Flex
+                    beta.kubernetes.io/os=linux
+                    displayName=oke-crkum2moc5a-nt67lwtqjcq-ssv6rkpxd4a-0
+                    failure-domain.beta.kubernetes.io/region=me-dubai-1
+                    failure-domain.beta.kubernetes.io/zone=ME-DUBAI-1-AD-1
+                    hostname=oke-crkum2moc5a-nt67lwtqjcq-ssv6rkpxd4a-0
+                    internal_addr=10.0.1.131
+                    kubernetes.io/arch=arm64
+                    kubernetes.io/hostname=10.0.1.131
+                    kubernetes.io/os=linux
+                    last-migration-failure=get_kubesvc_failure
+                    name=k8s-cluster-pool-1
+                    node-role.kubernetes.io/node=
+                    node.info.ds_proxymux_client=true
+                    node.info/compartment.id=aaaaaaaa6nxh2jc6tjcsz4f4qb62wkcu6lw3hdf7ufobqeqy52xcjexmoplq
+                    node.info/compartment.name=graff1507
+                    node.info/kubeletVersion=v1.36
+                    node.kubernetes.io/instance-type=VM.Standard.A1.Flex
+                    oci.oraclecloud.com/fault-domain=FAULT-DOMAIN-1
+                    oci.oraclecloud.com/host.id=3ab54d8ee74
+                    oci.oraclecloud.com/host.rack_id=9c38203fc5c
+                    oci.oraclecloud.com/ip-family-ipv4=true
+                    oci.oraclecloud.com/ip-family-preferred=ipv4
+                    oci.oraclecloud.com/node.info.managed=true
+                    oci.oraclecloud.com/oke-node-problem-detector-enabled=true
+                    oci.oraclecloud.com/oke-observability-agent-enabled=true
+                    oke.oraclecloud.com/node.info.private_subnet=true
+                    oke.oraclecloud.com/node.info.private_worker=true
+                    topology.kubernetes.io/region=me-dubai-1
+                    topology.kubernetes.io/zone=ME-DUBAI-1-AD-1
+Annotations:        alpha.kubernetes.io/provided-node-ip: 10.0.1.131
+                    csi.volume.kubernetes.io/nodeid:
+                      {"blockvolume.csi.oraclecloud.com":"10.0.1.131","fss.csi.oraclecloud.com":"10.0.1.131","lustre.csi.oraclecloud.com":"10.0.1.131"}
+                    flannel.alpha.coreos.com/backend-data: {"VNI":1,"VtepMAC":"b6:75:4e:e7:03:77"}
+                    flannel.alpha.coreos.com/backend-type: vxlan
+                    flannel.alpha.coreos.com/kube-subnet-manager: true
+                    flannel.alpha.coreos.com/public-ip: 10.0.1.131
+                    node.alpha.kubernetes.io/ttl: 0
+                    oci.oraclecloud.com/compartment-id: ocid1.tenancy.oc1..aaaaaaaa6nxh2jc6tjcsz4f4qb62wkcu6lw3hdf7ufobqeqy52xcjexmoplq
+                    oci.oraclecloud.com/node-pool-id: ocid1.nodepool.oc1.me-dubai-1.aaaaaaaa4sctr7iofjjw6axfbwdtymv6cofutmdfoam7wae25nt67lwtqjcq
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sat, 08 Aug 2026 15:06:50 +0400
+Taints:             <none>
+Unschedulable:      false
+Lease:
+  HolderIdentity:  10.0.1.131
+  AcquireTime:     <unset>
+  RenewTime:       Sun, 09 Aug 2026 11:31:28 +0400
+Conditions:
+  Type                 Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----                 ------  -----------------                 ------------------                ------                       -------
+  NetworkUnavailable   False   Sat, 08 Aug 2026 15:08:53 +0400   Sat, 08 Aug 2026 15:08:53 +0400   FlannelIsUp                  Flannel is running on this node
+  MemoryPressure       False   Sun, 09 Aug 2026 11:26:45 +0400   Sat, 08 Aug 2026 15:06:50 +0400   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure         False   Sun, 09 Aug 2026 11:26:45 +0400   Sat, 08 Aug 2026 15:06:50 +0400   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure          False   Sun, 09 Aug 2026 11:26:45 +0400   Sat, 08 Aug 2026 15:06:50 +0400   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready                True    Sun, 09 Aug 2026 11:26:45 +0400   Sat, 08 Aug 2026 15:08:20 +0400   KubeletReady                 kubelet is posting ready status
+Addresses:
+  InternalIP:  10.0.1.131
+  Hostname:    10.0.1.131
+Capacity:
+  cpu:                1
+  ephemeral-storage:  36252Mi
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  hugepages-32Mi:     0
+  hugepages-64Ki:     0
+  memory:             5781500Ki
+  pods:               110
+Allocatable:
+  cpu:                840m
+  ephemeral-storage:  34211679381
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  hugepages-32Mi:     0
+  hugepages-64Ki:     0
+  memory:             4528124Ki
+  pods:               110
+System Info:
+  Machine ID:                 f122f52b6fbb419b88233528bf69b9a6
+  System UUID:                f122f52b-6fbb-419b-8823-3528bf69b9a6
+  Boot ID:                    88006e78-bafc-4648-aab6-23b511bfc305
+  Kernel Version:             5.15.0-321.202.5.1.el8uek.aarch64
+  OS Image:                   Oracle Linux Server 8.10
+  Operating System:           linux
+  Architecture:               arm64
+  Container Runtime Version:  cri-o://1.36.0-16.81af8589483.el8
+  Kubelet Version:            v1.36.1
+PodCIDR:                      10.244.0.0/25
+PodCIDRs:                     10.244.0.0/25
+ProviderID:                   ocid1.instance.oc1.me-dubai-1.anshqljrfzvrijycyoyxzavvjpbmzgvedocattz27eyzhcgnoistr7772lqq
+Non-terminated Pods:          (23 in total)
+  Namespace                   Name                                                         CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                                                         ------------  ----------  ---------------  -------------  ---
+  default                     alertmanager-kube-prometheus-stack-alertmanager-0            20m (2%)      150m (17%)  192Mi (4%)       192Mi (4%)     14h
+  default                     external-dns-866f886d55-xppnz                                10m (1%)      50m (5%)    32Mi (0%)        64Mi (1%)      20h
+  default                     ingress-nginx-controller-c78777c78-22f8j                     50m (5%)      200m (23%)  256Mi (5%)       256Mi (5%)     15h
+  default                     ingress-nginx-internal-controller-66f64869d6-58bxq           50m (5%)      200m (23%)  256Mi (5%)       256Mi (5%)     15h
+  default                     kube-prometheus-stack-kube-state-metrics-5b5758d8fd-f2g4c    10m (1%)      100m (11%)  128Mi (2%)       128Mi (2%)     16h
+  default                     kube-prometheus-stack-operator-859b85f9c4-tjxds              20m (2%)      100m (11%)  128Mi (2%)       128Mi (2%)     14h
+  default                     kube-prometheus-stack-prometheus-node-exporter-cgxfl         10m (1%)      50m (5%)    64Mi (1%)        64Mi (1%)      16h
+  default                     static-nginx-deployment-1-c86fbc4b-8mfvm                     10m (1%)      50m (5%)    64Mi (1%)        64Mi (1%)      15h
+  default                     static-nginx-deployment-2-5874585f64-jh8lt                   10m (1%)      50m (5%)    64Mi (1%)        64Mi (1%)      15h
+  default                     wireguard-79b8cbb978-hhzv9                                   10m (1%)      100m (11%)  64Mi (1%)        64Mi (1%)      19h
+  flux-system                 helm-controller-84f677bf87-s99pj                             20m (2%)      200m (23%)  64Mi (1%)        512Mi (11%)    15h
+  flux-system                 kustomize-controller-7cc8954b94-dlggg                        20m (2%)      200m (23%)  64Mi (1%)        512Mi (11%)    15h
+  flux-system                 notification-controller-586678b56d-thc44                     20m (2%)      200m (23%)  64Mi (1%)        512Mi (11%)    15h
+  flux-system                 source-controller-7697cc7845-7wttk                           20m (2%)      200m (23%)  64Mi (1%)        512Mi (11%)    15h
+  internal-dns                internal-coredns-699f654f4b-wq47b                            10m (1%)      50m (5%)    64Mi (1%)        64Mi (1%)      15h
+  kube-system                 coredns-6786ccb4f9-7mzgf                                     100m (11%)    0 (0%)      70Mi (1%)        170Mi (3%)     20h
+  kube-system                 csi-oci-node-ghlz6                                           30m (3%)      500m (59%)  70Mi (1%)        300Mi (6%)     20h
+  kube-system                 kube-dns-autoscaler-8464f5c584-549jw                         20m (2%)      0 (0%)      10Mi (0%)        0 (0%)         20h
+  kube-system                 kube-flannel-ds-9pmjf                                        100m (11%)    1 (119%)    50Mi (1%)        500Mi (11%)    20h
+  kube-system                 kube-proxy-5c9m8                                             0 (0%)        0 (0%)      0 (0%)           0 (0%)         20h
+  kube-system                 oke-dataplane-observability-agent-n6xwn                      20m (2%)      100m (11%)  200Mi (4%)       612Mi (13%)    20h
+  kube-system                 oke-node-problem-detector-b92f6                              10m (1%)      10m (1%)    80Mi (1%)        160Mi (3%)     20h
+  kube-system                 proxymux-client-xd4pc                                        50m (5%)      500m (59%)  64Mi (1%)        256Mi (5%)     20h
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests      Limits
+  --------           --------      ------
+  cpu                620m (73%)    4010m (477%)
+  memory             2112Mi (47%)  5390Mi (121%)
+  ephemeral-storage  0 (0%)        0 (0%)
+  hugepages-1Gi      0 (0%)        0 (0%)
+  hugepages-2Mi      0 (0%)        0 (0%)
+  hugepages-32Mi     0 (0%)        0 (0%)
+  hugepages-64Ki     0 (0%)        0 (0%)
+
+
+Name:               10.0.1.228
+Roles:              node
+Labels:             beta.kubernetes.io/arch=arm64
+                    beta.kubernetes.io/instance-type=VM.Standard.A1.Flex
+                    beta.kubernetes.io/os=linux
+                    displayName=oke-crkum2moc5a-n7zudqrxwua-ssv6rkpxd4a-0
+                    failure-domain.beta.kubernetes.io/region=me-dubai-1
+                    failure-domain.beta.kubernetes.io/zone=ME-DUBAI-1-AD-1
+                    hostname=oke-crkum2moc5a-n7zudqrxwua-ssv6rkpxd4a-0
+                    internal_addr=10.0.1.228
+                    kubernetes.io/arch=arm64
+                    kubernetes.io/hostname=10.0.1.228
+                    kubernetes.io/os=linux
+                    last-migration-failure=get_kubesvc_failure
+                    name=k8s-cluster-pool-0
+                    node-role.kubernetes.io/node=
+                    node.info.ds_proxymux_client=true
+                    node.info/compartment.id=aaaaaaaa6nxh2jc6tjcsz4f4qb62wkcu6lw3hdf7ufobqeqy52xcjexmoplq
+                    node.info/compartment.name=graff1507
+                    node.info/kubeletVersion=v1.36
+                    node.kubernetes.io/instance-type=VM.Standard.A1.Flex
+                    oci.oraclecloud.com/fault-domain=FAULT-DOMAIN-1
+                    oci.oraclecloud.com/host.id=46e91b27330
+                    oci.oraclecloud.com/host.rack_id=caf3a6a76d9
+                    oci.oraclecloud.com/ip-family-ipv4=true
+                    oci.oraclecloud.com/ip-family-preferred=ipv4
+                    oci.oraclecloud.com/node.info.managed=true
+                    oci.oraclecloud.com/oke-node-problem-detector-enabled=true
+                    oci.oraclecloud.com/oke-observability-agent-enabled=true
+                    oke.oraclecloud.com/node.info.private_subnet=true
+                    oke.oraclecloud.com/node.info.private_worker=true
+                    topology.kubernetes.io/region=me-dubai-1
+                    topology.kubernetes.io/zone=ME-DUBAI-1-AD-1
+Annotations:        alpha.kubernetes.io/provided-node-ip: 10.0.1.228
+                    csi.volume.kubernetes.io/nodeid:
+                      {"blockvolume.csi.oraclecloud.com":"10.0.1.228","fss.csi.oraclecloud.com":"10.0.1.228","lustre.csi.oraclecloud.com":"10.0.1.228"}
+                    flannel.alpha.coreos.com/backend-data: {"VNI":1,"VtepMAC":"76:4e:66:e1:77:fd"}
+                    flannel.alpha.coreos.com/backend-type: vxlan
+                    flannel.alpha.coreos.com/kube-subnet-manager: true
+                    flannel.alpha.coreos.com/public-ip: 10.0.1.228
+                    node.alpha.kubernetes.io/ttl: 0
+                    oci.oraclecloud.com/compartment-id: ocid1.tenancy.oc1..aaaaaaaa6nxh2jc6tjcsz4f4qb62wkcu6lw3hdf7ufobqeqy52xcjexmoplq
+                    oci.oraclecloud.com/node-pool-id: ocid1.nodepool.oc1.me-dubai-1.aaaaaaaan6urknqutuo3ltru3wu4zrqtpl4u7kuqkzunujrbtn7zudqrxwua
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sat, 08 Aug 2026 15:06:55 +0400
+Taints:             <none>
+Unschedulable:      false
+Lease:
+  HolderIdentity:  10.0.1.228
+  AcquireTime:     <unset>
+  RenewTime:       Sun, 09 Aug 2026 11:31:24 +0400
+Conditions:
+  Type                 Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----                 ------  -----------------                 ------------------                ------                       -------
+  NetworkUnavailable   False   Sat, 08 Aug 2026 15:09:04 +0400   Sat, 08 Aug 2026 15:09:04 +0400   FlannelIsUp                  Flannel is running on this node
+  MemoryPressure       False   Sun, 09 Aug 2026 11:31:12 +0400   Sat, 08 Aug 2026 15:06:55 +0400   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure         False   Sun, 09 Aug 2026 11:31:12 +0400   Sat, 08 Aug 2026 15:06:55 +0400   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure          False   Sun, 09 Aug 2026 11:31:12 +0400   Sat, 08 Aug 2026 15:06:55 +0400   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready                True    Sun, 09 Aug 2026 11:31:12 +0400   Sat, 08 Aug 2026 15:08:30 +0400   KubeletReady                 kubelet is posting ready status
+Addresses:
+  InternalIP:  10.0.1.228
+  Hostname:    10.0.1.228
+Capacity:
+  cpu:                1
+  ephemeral-storage:  36252Mi
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  hugepages-32Mi:     0
+  hugepages-64Ki:     0
+  memory:             5781500Ki
+  pods:               110
+Allocatable:
+  cpu:                840m
+  ephemeral-storage:  34211679381
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  hugepages-32Mi:     0
+  hugepages-64Ki:     0
+  memory:             4528124Ki
+  pods:               110
+System Info:
+  Machine ID:                 56d569c9ad5845b887178a52b5230308
+  System UUID:                56d569c9-ad58-45b8-8717-8a52b5230308
+  Boot ID:                    c2d1194e-d074-4be6-af25-54de72d01a50
+  Kernel Version:             5.15.0-321.202.5.1.el8uek.aarch64
+  OS Image:                   Oracle Linux Server 8.10
+  Operating System:           linux
+  Architecture:               arm64
+  Container Runtime Version:  cri-o://1.36.0-16.81af8589483.el8
+  Kubelet Version:            v1.36.1
+PodCIDR:                      10.244.0.128/25
+PodCIDRs:                     10.244.0.128/25
+ProviderID:                   ocid1.instance.oc1.me-dubai-1.anshqljrfzvrijycp5twsmh6drc7bdspsuw77qb7fp2sub4achj3rusieyyq
+Non-terminated Pods:          (13 in total)
+  Namespace                   Name                                                    CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                                                    ------------  ----------  ---------------  -------------  ---
+  cert-manager                cert-manager-588d945c9c-nr786                           10m (1%)      100m (11%)  64Mi (1%)        64Mi (1%)      19h
+  cert-manager                cert-manager-cainjector-84d7b8b96d-flg8q                10m (1%)      100m (11%)  64Mi (1%)        64Mi (1%)      19h
+  cert-manager                cert-manager-webhook-58d66fc877-bctql                   10m (1%)      50m (5%)    32Mi (0%)        32Mi (0%)      19h
+  default                     kube-prometheus-stack-grafana-57fcd64c7b-z4tnd          70m (8%)      700m (83%)  768Mi (17%)      768Mi (17%)    14h
+  default                     kube-prometheus-stack-prometheus-node-exporter-dpf22    10m (1%)      50m (5%)    64Mi (1%)        64Mi (1%)      16h
+  default                     prometheus-kube-prometheus-stack-prometheus-0           60m (7%)      550m (65%)  1344Mi (30%)     1344Mi (30%)   14h
+  kube-system                 coredns-6786ccb4f9-vl5w8                                100m (11%)    0 (0%)      70Mi (1%)        170Mi (3%)     20h
+  kube-system                 csi-oci-node-v9x25                                      30m (3%)      500m (59%)  70Mi (1%)        300Mi (6%)     20h
+  kube-system                 kube-flannel-ds-flcp7                                   100m (11%)    1 (119%)    50Mi (1%)        500Mi (11%)    20h
+  kube-system                 kube-proxy-z69pg                                        0 (0%)        0 (0%)      0 (0%)           0 (0%)         20h
+  kube-system                 oke-dataplane-observability-agent-qhhhm                 20m (2%)      100m (11%)  200Mi (4%)       612Mi (13%)    15h
+  kube-system                 oke-node-problem-detector-hw7bk                         10m (1%)      10m (1%)    80Mi (1%)        160Mi (3%)     16h
+  kube-system                 proxymux-client-5n66q                                   50m (5%)      500m (59%)  64Mi (1%)        256Mi (5%)     20h
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests      Limits
+  --------           --------      ------
+  cpu                480m (57%)    3660m (435%)
+  memory             2870Mi (64%)  4334Mi (98%)
+  ephemeral-storage  0 (0%)        0 (0%)
+  hugepages-1Gi      0 (0%)        0 (0%)
+  hugepages-2Mi      0 (0%)        0 (0%)
+  hugepages-32Mi     0 (0%)        0 (0%)
+  hugepages-64Ki     0 (0%)        0 (0%)

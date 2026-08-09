@@ -77,6 +77,15 @@ echo "Username: ${GRAFANA_USER}"
 echo "Password: ${GRAFANA_PASS}"
 """
 
+[tasks."get-dagu-creds"]
+description = "Outputs grafana credentials into stdin"
+run = """
+DAGU_USER=$(kubectl get secret dagu-basic-auth -o jsonpath="{.data.username}" | base64 -d)
+DAGU_PASS=$(kubectl get secret dagu-basic-auth -o jsonpath="{.data.password}" | base64 -d)
+echo "Username: ${DAGU_USER}"
+echo "Password: ${DAGU_PASS}"
+"""
+
 # ============  Template Rendering  =============
 
 [tasks."render:wg-config"]
@@ -161,6 +170,21 @@ sed -e 's|${DAGU_USER}|'"${DAGU_USER}"'|g' \
 mise run age:encrypt --file manifests/workflow/dagu/dagu-secret.yaml
 """
 
+[tasks."render:n8n-secret"]
+description = "Renders n8n secret"
+env.N8N_ENCRYPTION_KEY = "{{ env.N8N_ENCRYPTION_KEY | default(value=exec(command='openssl rand -hex 32')) }}"
+
+run = """
+if [ -f manifests/workflow/n8n/n8n-secret.yaml ]; then
+  echo "Secret already exists"
+  exit 0
+fi
+sed -e 's|${N8N_ENCRYPTION_KEY}|'"${N8N_ENCRYPTION_KEY}"'|g' \
+  manifests/workflow/n8n/n8n-secret.yaml.tmpl > manifests/workflow/n8n/n8n-secret.yaml
+
+mise run age:encrypt --file manifests/workflow/n8n/n8n-secret.yaml
+"""
+
 
 [tasks."render:all"]
 description = "Renders all templates"
@@ -168,7 +192,8 @@ run = [
     { task = "render:public-ingress" },
     { task = "render:wg-config" },
     { task = "render:grafana-secret" },
-    { task = "render:dagu-secret" }
+    { task = "render:dagu-secret" },
+    { task = "render:n8n-secret" }
 ]
 
 # ============  Flux  =============
@@ -220,3 +245,5 @@ run = """
 sops --age=$(cat age_public_key) \
 --encrypt --encrypted-regex '^(data|stringData)$' --in-place ${usage_file}
 """
+
+# ========= Debug ============
