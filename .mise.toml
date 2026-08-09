@@ -248,10 +248,33 @@ sops --age=$(cat age_public_key) \
 
 # ========= Debug ============
 [tasks."debug:pvc"]
-description = "Encrypts secret via sops and age public key"
+description = "Mount a PVC in an interactive busybox pod for inspection"
 usage = '''
-flag "--claimName <claimName>" help="PVC to debug"
+flag "--claim-name <claim_name>" help="PVC to debug"
+flag "--node-selector <node_selector>" help="Node name label value (e.g. k8s-cluster-pool-0)"
 '''
 run = """
-kubectl 
+kubectl run debug-pvc --rm -it --restart=Never --image=busybox --overrides="$(cat <<EOF
+{
+  "spec": {
+    "containers": [
+      {
+        "name": "debug-pvc",
+        "image": "busybox",
+        "command": ["sh"],
+        "stdin": true,
+        "tty": true,
+        "volumeMounts": [{ "mountPath": "/pvc-mount", "name": "target-pvc-volume" }]
+      }
+    ],
+    "nodeSelector": {
+      "name": "${usage_node_selector:?}"
+    },
+    "volumes": [
+      { "name": "target-pvc-volume", "persistentVolumeClaim": { "claimName": "${usage_claim_name:?}" } }
+    ]
+  }
+}
+EOF
+)"
 """

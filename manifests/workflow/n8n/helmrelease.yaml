@@ -41,8 +41,9 @@ spec:
     #   enabled: true
 
     main:
+      # Chart expects a map (env name → EnvVar fields), not a list.
       extraEnv:
-        - N8N_ENCRYPTION_KEY:
+        N8N_ENCRYPTION_KEY:
           valueFrom:
             secretKeyRef:
               name: n8n-secrets
