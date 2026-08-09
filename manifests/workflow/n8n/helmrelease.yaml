@@ -42,16 +42,6 @@ spec:
 
     main:
       extraEnv:
-        - name: N8N_BASIC_AUTH_USER
-          valueFrom:
-            secretKeyRef:
-              name: n8n-auth-creds
-              key: username
-        - name: N8N_BASIC_AUTH_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: n8n-auth-creds
-              key: password
         - N8N_ENCRYPTION_KEY:
           valueFrom:
             secretKeyRef:
