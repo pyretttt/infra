@@ -144,11 +144,31 @@ sed -e 's|${GRAFANA_USER}|'"${GRAFANA_USER}"'|g' \
 mise run age:encrypt --file manifests/kube-prom-stack/grafana-secret.yaml
 """
 
+[tasks."render:dagu-secret"]
+description = "Renders dagu secret"
+env.DAGU_USER = "{{ env.DAGU_USER | default(value='admin') }}"
+env.DAGU_PASS = "{{ env.DAGU_PASS | default(value=exec(command='openssl rand -base64 16')) }}"
+
+run = """
+if [ -f manifests/workflow/dagu/dagu-secret.yaml ]; then
+  echo "Credentials already exists"
+  exit 0
+fi
+sed -e 's|${DAGU_USER}|'"${DAGU_USER}"'|g' \
+    -e 's|${DAGU_PASS}|'"${DAGU_PASS}"'|g' \
+  manifests/workflow/dagu/dagu-secret.yaml.tmpl > manifests/workflow/dagu/dagu-secret.yaml
+
+mise run age:encrypt --file manifests/workflow/dagu/dagu-secret.yaml
+"""
+
+
 [tasks."render:all"]
 description = "Renders all templates"
 run = [
     { task = "render:public-ingress" },
-    { task = "render:wg-config" }
+    { task = "render:wg-config" },
+    { task = "render:grafana-secret" },
+    { task = "render:dagu-secret" }
 ]
 
 # ============  Flux  =============
