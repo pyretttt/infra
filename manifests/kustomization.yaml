@@ -18,9 +18,9 @@ resources:
 - kube-prom-stack/helmrepository.yaml
 - kube-prom-stack/helmrelease.yaml
 - kube-prom-stack/grafana-secret.yaml
-- workflow/dagu/helmrepo.yaml
-- workflow/dagu/helmrelease.yaml
-- workflow/dagu/dagu-secret.yaml
+# - workflow/dagu/helmrepo.yaml
+# - workflow/dagu/helmrelease.yaml
+# - workflow/dagu/dagu-secret.yaml
 - workflow/n8n/helmrepo.yaml
 - workflow/n8n/helmrelease.yaml
 - workflow/n8n/n8n-secret.yaml
