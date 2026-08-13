@@ -1,5 +1,4 @@
-tf/.terraform
-tofu/.terraform
+oci-tf/.terraform
 *.auto.tfvars
 teardown.sh
 .kube.config
