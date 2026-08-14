@@ -1,0 +1,42 @@
+# Disable default uft rules to deny all traffic
+- name: Set default policies
+  ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+
+
+- name: Allow SSH
+  ufw:
+    # ufw supports connection rate limiting, which is useful for protecting
+    # against brute-force login attacks. ufw will deny connections if an IP
+    # address has attempted to initiate 6 or more connections in the last
+    # 30 seconds
+    rule: limit
+    port: "22"
+    proto: tcp
+
+- name: Allow HTTP/HTTPS (ingress)
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop: ["80", "443"]
+
+- name: Allow k3s API server only from my IP
+  ufw:
+    rule: allow
+    port: "6443"
+    proto: tcp
+
+# For future use: kubelet and flannel, when multiple nodes are used
+# - name: Allow k3s kubelet
+#   ufw:
+#     rule: allow
+#     port: "{{ item.port }}"
+#     proto: "{{ item.proto }}"
+#   loop:
+#     - port: "8472"
+#       proto: "udp"
+#     - port: "10250"
+#       proto: "tcp"
