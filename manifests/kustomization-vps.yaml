@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+# - ingress-nginx-controller/helmrepository.yaml
+# - ingress-nginx-controller/helmrelease.yaml
+# - provisioned/ingress/ingress-node-port.yaml
+# - provisioned/storage/storage-access.yaml
+# - nginx-1/static-nginx.yaml
+# - nginx-2/static-nginx.yaml
+- wg/deployment.yaml
+- wg/wg-config.yaml
+- internal-dns/internal-core-dns.yaml
+- cert-manager/helmrepository.yaml
+- cert-manager/helmrelease.yaml
+- external-dns/helmrepository.yaml
+- external-dns/helmrelease.yaml
+- external-dns/secret.yaml
+- kube-prom-stack/helmrepository.yaml
+- kube-prom-stack/helmrelease.yaml
+- kube-prom-stack/grafana-secret.yaml
+# - workflow/dagu/helmrepo.yaml
+# - workflow/dagu/helmrelease.yaml
+# - workflow/dagu/dagu-secret.yaml
+- workflow/n8n/helmrepo.yaml
+- workflow/n8n/helmrelease.yaml
+- workflow/n8n/n8n-secret.yaml
