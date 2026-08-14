@@ -1,34 +1,38 @@
-- name: Load required kernel modules
-  modprobe:
-    name: "{{ item }}"
-    state: present
-  loop: [overlay, br_netfilter]
+- name: Prepare node for k3s
+  hosts: vps
+  become: true
+  tasks:
+    - name: Load required kernel modules
+      modprobe:
+        name: "{{ item }}"
+        state: present
+      loop: [overlay, br_netfilter]
 
-- name: Persist modules across reboot
-  copy:
-    dest: /etc/modules-load.d/k3s.conf
-    content: |
-      overlay
-      br_netfilter
+    - name: Persist modules across reboot
+      copy:
+        dest: /etc/modules-load.d/k3s.conf
+        content: |
+          overlay
+          br_netfilter
 
-- name: Set required sysctl params
-  sysctl:
-    name: "{{ item.name }}"
-    value: "{{ item.value }}"
-    sysctl_set: yes
-    state: present
-    reload: yes
-  loop:
-    - { name: net.bridge.bridge-nf-call-iptables, value: "1" }
-    - { name: net.ipv4.ip_forward, value: "1" }
-    - { name: net.bridge.bridge-nf-call-ip6tables, value: "1" }
+    - name: Set required sysctl params
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        sysctl_set: yes
+        state: present
+        reload: yes
+      loop:
+        - { name: net.bridge.bridge-nf-call-iptables, value: "1" }
+        - { name: net.ipv4.ip_forward, value: "1" }
+        - { name: net.bridge.bridge-nf-call-ip6tables, value: "1" }
 
-- name: Disable swap
-  command: swapoff -a
-  when: ansible_swaptotal_mb > 0
+    - name: Disable swap
+      command: swapoff -a
+      when: ansible_swaptotal_mb > 0
 
-- name: Remove swap entry from fstab
-  mount:
-    path: none
-    fstype: swap
-    state: absent
+    - name: Remove swap entry from fstab
+      mount:
+        path: none
+        fstype: swap
+        state: absent

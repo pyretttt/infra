@@ -1,50 +1,53 @@
-# Disable default uft rules to deny all traffic
-- name: Set default policies
-  ufw:
-    state: enabled
-    policy: deny
-    direction: incoming
+- name: Configure firewall
+  hosts: vps
+  become: true
+  tasks:
+    - name: Allow SSH
+      ufw:
+        # ufw supports connection rate limiting, which is useful for protecting
+        # against brute-force login attacks. ufw will deny connections if an IP
+        # address has attempted to initiate 6 or more connections in the last
+        # 30 seconds
+        rule: limit
+        port: "22"
+        proto: tcp
 
+    - name: Allow HTTP/HTTPS (ingress)
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop: ["80", "443"]
 
-- name: Allow SSH
-  ufw:
-    # ufw supports connection rate limiting, which is useful for protecting
-    # against brute-force login attacks. ufw will deny connections if an IP
-    # address has attempted to initiate 6 or more connections in the last
-    # 30 seconds
-    rule: limit
-    port: "22"
-    proto: tcp
+    - name: Allow k3s API
+      ufw:
+        rule: allow
+        port: "6443"
+        proto: tcp
 
-- name: Allow HTTP/HTTPS (ingress)
-  ufw:
-    rule: allow
-    port: "{{ item }}"
-    proto: tcp
-  loop: ["80", "443"]
+    - name: Allow k3s pod and service CIDRs
+      ufw:
+        rule: allow
+        from_ip: "{{ item }}"
+      loop:
+        - "10.42.0.0/16"
+        - "10.43.0.0/16"
 
-- name: Allow k3s API server only from my IP
-  ufw:
-    rule: allow
-    port: "6443"
-    proto: tcp
+    # Enable last so SSH is already allowed before incoming traffic is denied
+    - name: Enable UFW with default deny incoming
+      ufw:
+        state: enabled
+        policy: deny
+        direction: incoming
 
-- name: K3s recomendations
-  ufw:
-    rule: allow
-    from_ip: "{{ item }}"
-  loop:
-    - "10.42.0.0/16"
-    - "10.43.0.0/16"
-
-# For future use: kubelet and flannel, when multiple nodes are used
-# - name: Allow k3s kubelet
-#   ufw:
-#     rule: allow
-#     port: "{{ item.port }}"
-#     proto: "{{ item.proto }}"
-#   loop:
-#     - port: "8472"
-#       proto: "udp"
-#     - port: "10250"
-#       proto: "tcp"
+    # For future use: kubelet and flannel, when multiple nodes are used
+    # - name: Allow k3s kubelet
+    #   ufw:
+    #     rule: allow
+    #     port: "{{ item.port }}"
+    #     proto: "{{ item.proto }}"
+    #   loop:
+    #     - port: "8472"
+    #       proto: "udp"
+    #     - port: "10250"
+    #       proto: "tcp"

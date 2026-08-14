@@ -1,22 +1,44 @@
-- name: Create deploy user
-  user:
-    name: deploy
-    groups: sudo
-    shell: /bin/bash
-    append: yes
+- name: Harden SSH and create deploy user
+  hosts: vps
+  become: true
+  tasks:
+    - name: Create deploy user
+      user:
+        name: deploy
+        groups: sudo
+        shell: /bin/bash
+        append: yes
 
-- name: Add SSH key for deploy user
-  authorized_key:
-    user: deploy
-    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    - name: Add SSH key for deploy user
+      authorized_key:
+        user: deploy
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 
-- name: Disable root login and password auth
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    # If line matched with regexp, it"s replaced with line, if not nothing is done
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-  loop:
-    - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
-    - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
-  notify: restart sshd
+    # If regexp matches, the line is replaced; if not, the line is appended.
+    - name: Disable root login and password auth in sshd_config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - { regexp: "^#?\\s*PermitRootLogin", line: "PermitRootLogin no" }
+        - { regexp: "^#?\\s*PasswordAuthentication", line: "PasswordAuthentication no" }
+      notify: restart_sshd
+
+    # Ubuntu reads sshd_config.d first; 00- so this wins over 50-cloud-init.conf
+    - name: Harden sshd via drop-in
+      copy:
+        dest: /etc/ssh/sshd_config.d/00-hardening.conf
+        content: |
+          PermitRootLogin no
+          PasswordAuthentication no
+        owner: root
+        group: root
+        mode: "0644"
+      notify: restart_sshd
+
+  handlers:
+    - name: restart_sshd
+      service:
+        name: ssh
+        state: restarted

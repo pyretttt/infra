@@ -1,5 +1,9 @@
 - name: Update apt cache and upgrade packages
-  apt:
-    update_cache: yes
-    upgrade: dist
-    cache_valid_time: 3600
+  hosts: vps
+  become: true
+  tasks:
+    - name: Update apt cache and upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+        cache_valid_time: 3600

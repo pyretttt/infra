@@ -1,10 +1,14 @@
 - name: Install and enable fail2ban
-  apt:
-    name: fail2ban
-    state: present
+  hosts: vps
+  become: true
+  tasks:
+    - name: Install fail2ban
+      apt:
+        name: fail2ban
+        state: present
 
-- name: Ensure fail2ban is running
-  systemd:
-    name: fail2ban
-    state: started
-    enabled: yes
+    - name: Ensure fail2ban is running
+      systemd:
+        name: fail2ban
+        state: started
+        enabled: yes
