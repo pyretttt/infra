@@ -1,0 +1,8 @@
+# site.yml
+- import_playbook: os_upgrade.yaml
+- import_playbook: ssh.yaml
+- import_playbook: firewall.yaml
+- import_playbook: k3s_prerequisites.yaml
+- import_playbook: fail2ban.yaml
+- import_playbook: timesync.yaml
+- import_playbook: k3s.yaml

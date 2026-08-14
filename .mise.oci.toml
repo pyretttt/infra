@@ -10,7 +10,26 @@ terraform = "latest"
 # additionally ansible
 
 [env]
-KUBECONFIG = "databasemart/.kube.config"
+KUBECONFIG = "tf/.kube.config"
+
+[tasks."oci-provision"]
+description = "creates oci k8s free infrastructure"
+dir = "tf"
+run = """
+if [ -d ".terraform" ]; then
+    echo "Terraform is initialized."
+else
+    echo "Terraform is NOT initialized. Running init now..."
+    terraform init
+fi
+if [ -f "variables-private.auto.tfvars" ]; then
+    echo "Private variables files found"
+else
+    echo "Setup variables-private.auto.tfvars"
+    exit 1
+fi
+terraform apply
+"""
 
 [tasks."k9s"]
 description = "runs k9s with provisioned cluster config"
@@ -67,15 +86,6 @@ DAGU_PASS=$(kubectl get secret dagu-basic-auth -o jsonpath="{.data.password}" | 
 echo "Username: ${DAGU_USER}"
 echo "Password: ${DAGU_PASS}"
 """
-
-# ============  Ansible  =============
-[tasks."ansible:configure-all"]
-description = "Runs full configuration of vps"
-dir = "databasemart/ansible"
-run = """
-ansible -i inventory.yaml all.yaml
-"""
-
 
 # ============  Template Rendering  =============
 

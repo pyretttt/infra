@@ -1,6 +1,7 @@
 vps:
   hosts:
     databasemart_vps:
+      public_ip: 69.30.204.214
       ansible_host: 69.30.204.214
       ansible_port: 22
       ansible_ssh_user: administrator

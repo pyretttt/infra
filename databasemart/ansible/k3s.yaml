@@ -1,0 +1,24 @@
+- name: Download k3s install script
+  get_url:
+    url: https://get.k3s.io
+    dest: /tmp/install_k3s.sh
+    mode: '0755'
+
+- name: Install k3s (server, single node)
+  command: /tmp/install_k3s.sh
+  args:
+    creates: /usr/local/bin/k3s
+  environment:
+    INSTALL_K3S_EXEC: |
+      server --write-kubeconfig-mode 644 \
+      --node-external-ip {{ ansible_default_ipv4.address if public_ip is not defined else public_ip }}
+
+- name: Download Kubeconfig
+  fetch:
+    src: /etc/rancher/k3s/config.yaml
+    dest: ../.kube.config
+
+- name: Ensure k3s is enabled on boot
+  ansible.builtin.systemd:
+    name: k3s
+    enabled: true
