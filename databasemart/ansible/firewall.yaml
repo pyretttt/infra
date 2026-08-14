@@ -29,6 +29,14 @@
     port: "6443"
     proto: tcp
 
+- name: K3s recomendations
+  ufw:
+    rule: allow
+    from_ip: "{{ item }}"
+  loop:
+    - "10.42.0.0/16"
+    - "10.43.0.0/16"
+
 # For future use: kubelet and flannel, when multiple nodes are used
 # - name: Allow k3s kubelet
 #   ufw:
