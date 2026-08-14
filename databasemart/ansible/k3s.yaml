@@ -1,6 +1,8 @@
 - name: Install k3s
   hosts: vps
   become: true
+  vars:
+    k3s_external_ip: "{{ public_ip | default(ansible_default_ipv4.address) }}"
   tasks:
     - name: Download k3s install script
       get_url:
@@ -8,12 +10,37 @@
         dest: /tmp/install_k3s.sh
         mode: "0755"
 
+    - name: Ensure k3s config directory exists
+      file:
+        path: /etc/rancher/k3s
+        state: directory
+        mode: "0755"
+
+    # Flags live here so later playbook runs can change them without reinstalling
+    - name: Write k3s server config
+      copy:
+        dest: /etc/rancher/k3s/config.yaml
+        mode: "0600"
+        content: |
+          write-kubeconfig-mode: "644"
+          node-external-ip: "{{ k3s_external_ip }}"
+          tls-san:
+            - "{{ k3s_external_ip }}"
+      register: k3s_config
+
     - name: Install k3s (server, single node)
       command: /tmp/install_k3s.sh
       args:
         creates: /usr/local/bin/k3s
       environment:
-        INSTALL_K3S_EXEC: "server --write-kubeconfig-mode 644 --node-external-ip {{ public_ip | default(ansible_default_ipv4.address) }}"
+        INSTALL_K3S_EXEC: "server"
+      register: k3s_install
+
+    - name: Restart k3s when config changed
+      systemd:
+        name: k3s
+        state: restarted
+      when: k3s_config.changed and not k3s_install.changed
 
     - name: Ensure k3s is started and enabled on boot
       systemd:
@@ -26,8 +53,20 @@
         path: /etc/rancher/k3s/k3s.yaml
         timeout: 120
 
+    - name: Copy kubeconfig to temporary file
+      copy:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: /tmp/k3s-external.yaml
+        remote_src: true
+
+    - name: Point kubeconfig at the public API
+      replace:
+        path: /tmp/k3s-external.yaml
+        regexp: 'https://127\.0\.0\.1:6443'
+        replace: "https://{{ k3s_external_ip }}:6443"
+
     - name: Download kubeconfig
       fetch:
-        src: /etc/rancher/k3s/k3s.yaml
+        src: /tmp/k3s-external.yaml
         dest: "{{ playbook_dir }}/../.kube.config"
         flat: true

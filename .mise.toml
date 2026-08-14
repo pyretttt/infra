@@ -73,7 +73,7 @@ echo "Password: ${DAGU_PASS}"
 description = "Runs full configuration of vps"
 dir = "databasemart/ansible"
 run = """
-ansible -i inventory.yaml all.yaml
+ansible-playbook -i inventory.yaml all.yaml -K
 """
 
 

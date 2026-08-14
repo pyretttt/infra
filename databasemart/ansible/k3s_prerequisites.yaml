@@ -27,12 +27,28 @@
         - { name: net.ipv4.ip_forward, value: "1" }
         - { name: net.bridge.bridge-nf-call-ip6tables, value: "1" }
 
-    - name: Disable swap
+    - name: Disable swap now
       command: swapoff -a
-      when: ansible_swaptotal_mb > 0
+      when: ansible_facts['swaptotal_mb'] | int > 0
 
-    - name: Remove swap entry from fstab
-      mount:
-        path: none
-        fstype: swap
-        state: absent
+    # Ubuntu swap can be fstab, /swap.img, and a generated systemd unit
+    - name: Comment swap entries in fstab
+      replace:
+        path: /etc/fstab
+        regexp: '^([^#\s].*\sswap\s.*)$'
+        replace: '# \1'
+
+    - name: Collect systemd swap units
+      command: systemctl list-unit-files --type=swap --no-legend --plain
+      register: swap_unit_files
+      changed_when: false
+      # systemd exits 1 when no swap units exist
+      failed_when: swap_unit_files.rc > 1
+
+    - name: Mask systemd swap units
+      systemd:
+        name: "{{ item.split()[0] }}"
+        masked: true
+        daemon_reload: true
+      loop: "{{ swap_unit_files.stdout_lines }}"
+      when: item | length > 0

@@ -6,3 +6,4 @@
 - import_playbook: fail2ban.yaml
 - import_playbook: timesync.yaml
 - import_playbook: k3s.yaml
+- import_playbook: finalize.yaml

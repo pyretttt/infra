@@ -33,6 +33,20 @@
         - "10.42.0.0/16"
         - "10.43.0.0/16"
 
+    # cni0 does not exist until k3s starts; UFW still stores the rule
+    - name: Allow traffic in on k3s CNI bridge
+      ufw:
+        rule: allow
+        interface: cni0
+        direction: in
+        from_ip: 10.42.0.0/16
+
+    # UFW defaults FORWARD/routed to DROP, which breaks pod-to-pod and egress
+    - name: Allow routed traffic for k3s CNI
+      ufw:
+        default: allow
+        direction: routed
+
     # Enable last so SSH is already allowed before incoming traffic is denied
     - name: Enable UFW with default deny incoming
       ufw:

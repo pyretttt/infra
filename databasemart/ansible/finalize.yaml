@@ -1,0 +1,6 @@
+- name: "Finalizes all configurations with reboot"
+  hosts: vps
+  become: true
+  tasks:
+    - name: Reboot the server
+      reboot:
