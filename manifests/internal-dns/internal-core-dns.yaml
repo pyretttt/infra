@@ -43,12 +43,12 @@ data:
   Corefile: |
     polywhale.com:53 {
         errors
-        # Ingress Host names → internal nginx controller Service (not backends).
-        # Flow: dig grafana.polywhale.com → ClusterIP of ingress-nginx-internal-controller
-        #       → nginx matches Host → backend Service.
+        # Ingress Host names → internal Traefik controller Service (not backends).
+        # Flow: dig grafana.polywhale.com → ClusterIP of traefik-internal
+        #       → Traefik matches Host → backend Service.
         # Add new Ingress hosts to this regex (or they will miss unless a same-named Service exists).
         rewrite stop {
-            name regex ^(grafana|prometheus|alertmanager|dagu|n8n)\.polywhale\.com\.$ ingress-nginx-internal-controller.default.svc.polywhale.com.
+            name regex ^(grafana|prometheus|alertmanager|dagu|n8n)\.polywhale\.com\.$ traefik-internal.default.svc.polywhale.com.
             answer auto
         }
         # Direct Service publish: <service>.polywhale.com → Service in default with label.

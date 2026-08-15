@@ -4,11 +4,10 @@ metadata:
   name: ingress-gateway
   namespace: default
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
     cert-manager.io/cluster-issuer: letsencrypt-prod
     external-dns.alpha.kubernetes.io/target: "139.185.61.92"
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   tls:
     - hosts: [test.polywhale.cc, polywhale.cc]
       secretName: polywhale-cc-tls

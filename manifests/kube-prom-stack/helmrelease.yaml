@@ -67,7 +67,7 @@ spec:
       enabled: true
       ingress:
         enabled: true
-        ingressClassName: nginx-internal
+        ingressClassName: traefik-internal
         hosts:
           - alertmanager.polywhale.com
         paths:
@@ -105,7 +105,7 @@ spec:
           helm.sh/resource-policy: keep
       ingress:
         enabled: true
-        ingressClassName: nginx-internal
+        ingressClassName: traefik-internal
         hosts:
           - grafana.polywhale.com
         path: /
@@ -131,7 +131,7 @@ spec:
     prometheus:
       ingress:
         enabled: true
-        ingressClassName: nginx-internal
+        ingressClassName: traefik-internal
         hosts:
           - prometheus.polywhale.com
         paths:

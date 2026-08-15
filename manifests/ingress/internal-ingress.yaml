@@ -3,10 +3,8 @@ kind: Ingress
 metadata:
   name: ingress-gateway-internal
   namespace: default
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: nginx-internal
+  ingressClassName: traefik-internal
   rules:
     - http:
         paths:

@@ -23,7 +23,7 @@ spec:
 
     ingress:
       enabled: true
-      className: "nginx-internal"
+      className: "traefik-internal"
       hosts:
         - host: n8n.polywhale.com
           paths:

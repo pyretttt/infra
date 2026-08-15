@@ -30,7 +30,7 @@ spec:
           cpu: "500m"
     ingress:
       enabled: true
-      className: "nginx-internal"
+      className: "traefik-internal"
       host: dagu.polywhale.com
       tls:
         enabled: false

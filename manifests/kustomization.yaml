@@ -3,6 +3,8 @@ kind: Kustomization
 resources:
 # - ingress-nginx-controller/helmrepository.yaml
 # - ingress-nginx-controller/helmrelease.yaml
+- traefik-ingress-controller/helmrepository.yaml
+- traefik-ingress-controller/helmrelease.yaml
 # - provisioned/ingress/ingress-node-port.yaml
 # - provisioned/storage/storage-access.yaml
 # - nginx-1/static-nginx.yaml

@@ -21,9 +21,5 @@ spec:
       namespace: flux-system
     - apiVersion: helm.toolkit.fluxcd.io/v2
       kind: HelmRelease
-      name: ingress-nginx
-      namespace: default
-    - apiVersion: helm.toolkit.fluxcd.io/v2
-      kind: HelmRelease
-      name: ingress-nginx-internal
+      name: traefik-internal
       namespace: default
