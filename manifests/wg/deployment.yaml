@@ -40,6 +40,7 @@ spec:
             - containerPort: 51820
               hostPort: 51820
               protocol: UDP
+              hostIP: 0.0.0.0 
           env:
             - name: "TZ"
               value: "Europe/Moscow"

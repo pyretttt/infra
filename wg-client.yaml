@@ -5,19 +5,19 @@ metadata:
     namespace: default
 type: Opaque
 stringData:
-    wg0.conf.template: ENC[AES256_GCM,data:Kue3GSh/3INs6GvMH4UT0D7dkiQCQvdcACAD8MNpqXWqpcsX/z53kS8jj2u+7UKaIcXS+QD4ePqul+wbTAFzANfrsZ4zNbe4BxobGIZ7BXGib2bU6TFb6QJ3XBXx03tgDmJcL8RsQQJP6AdMvFvjuNZRGjU45EYYeEuzyzAEaFrF2kN7anEiYxaLtoGwFuZ1Ww4xOa75381IDpeD3Nvas17BWQLj2MnL3SC0w6niIyHu/c5rBS1w8O3fIIf9UONLua+hHADpVE4BXCyyKvVSENRipCsF70AIRU5pUIA1WByxJ8SScgSWfrls0q0rnnmIDvjMILIrUOwewPYHuaioMr2f3otmBUUIPVaa/ykU8IqS,iv:jpFxYMo/L6KsoR5F2UzTNtHnlzpBrOBMiHTrL4788pw=,tag:L95QTx96HRoxq8DX41ldWA==,type:str]
+    wg0.conf.template: ENC[AES256_GCM,data:txauMHhC96t7700kgO/ZPOlFnIE4IqzZpmG9HTPhJTSJPqgWJCXTiD/Q4WvwGY8YsqIEbg7LiykaGAG+hF5o0CokcPRd4s8QsZYCxyRcKsW1pz8IsUsEpTaci7Y5xavgTd6xQeq+Zwc4LzJ+mgVgvwrDCmQ1ZGRnkSvJL8Jgq7WhZ9pvbpvjMdU3GfC5oRWQ9qxpX+tBSPq89r2djDplR5QFk8dhD1N21p9qAlhuRKEB8sRg47uftzmhFRym7a0ITRVHaVhbpNAniuhvstyevCaQDYI3bGX2l5tyCgEYJYRWYQrPnZe5SLcN/J5o5Mbio3RqIGp7Vz8x/jTpsE4kCBirF4UbBGrRI4/FHPHAZSny,iv:2VqNNFKCEvyrFnGiRIDIa0jTmXiRsUHxHO/v/DAucsU=,tag:1OQQ+89kcw+V6m0sxco3cQ==,type:str]
 sops:
     age:
         - enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBwZFNybjdjVDBob0dkUTlu
-            clc2RExJSHJDQU0zZFZZNFJocitkOHh3NXlnCnlhYzVIeklvMm9wRFlXYzZqWERH
-            K0R6S0JJR0VzNUg3REhCdGFoVS9ieGcKLS0tIEZlOFFxRGhDZ1o2a1N6WjZzcldE
-            L0VnNnAvYXU2eU1TYVVZbk9raXlnUm8KYC20XWacNK9AFX5Q4Euhn7sBTgdbposm
-            1HkCrRY/LZ8iCi1bzMJKEgdw3BWAqWcSR9ICCeth2dZss5Q1cZnQ0g==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBXdzNWREJwaFZUWXYyTXNL
+            bUpqUzFoU1N0RWZsWVVKM1U2c1laKzNPd2drClpJc0VsS3hyNlZib09WbDhmRW00
+            aS9Ed25OenFUajdEQUZRUGZzeUhJM28KLS0tIGd5SUI5U1RKOXVlWTRIY0FvOFBz
+            MXBjVXYxRjBNMnFTbVFnZDAvS1g1L1UK/1wJ7g0VSASlGy0t3iK46ImZ09uc24+p
+            GNLi9jU1eSoxKk8vVnoQW23/BDsX7fO5OtC4X37yGzQ2sFtE8VTrkg==
             -----END AGE ENCRYPTED FILE-----
           recipient: age1m9wcxcdm4tkjqd5daaal2kqxutmpu3nxq8zxlry5atjs82n8yvqsq9kga0
     encrypted_regex: ^(data|stringData)$
-    lastmodified: "2026-08-15T14:33:09Z"
-    mac: ENC[AES256_GCM,data:Ro1LmSDmx5c/wBiSZLlVhGkEatYXWnokn5ons7ypvfhqgVyexz4sBHkVfpQv6llIeLBVwvbD6xg3TsrNej14yvqI4ybMszml4DSrnrGsbWO0JgbgmYrxZfGJbV4choaxEFBaag9RDMmomslAJeCpaBnsFlgt4CKVCLy8jJ585wE=,iv:4UoPupVYl78OiqPb629dYtgI5dg85KTJBpY4xvEnnr8=,tag:ftLJSKKLqyzRgURuo5cJ8A==,type:str]
+    lastmodified: "2026-08-15T15:31:52Z"
+    mac: ENC[AES256_GCM,data:GXu/0VkrDC6glnSUuYr/EvP0zZOoJMjbIz7nkrM3fHS1Uq4AyPCi33l0jRKVWRugs/dC8B8u2x78goJe/bZq4Nk+w5CnBmOM7PD3CoG6Z2TwbxXz9vVzA7RYerBP5eXZPT5X3ZwY6eAMkUbZ7i4xNlaj3NJhJRDM7bw/PQitWxM=,iv:Py/N1bsymN7rNvTVf0/BnbfpGclpebWxQdcE/sQMMIU=,tag:tKbu4Ad0x4l+JSMvnOSPBQ==,type:str]
     version: 3.13.3
