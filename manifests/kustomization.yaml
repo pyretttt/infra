@@ -10,6 +10,7 @@ resources:
 - nginx-1/static-nginx.yaml
 - nginx-2/static-nginx.yaml
 - wg/deployment.yaml
+- wg/service.yaml
 - wg/wg-config.yaml
 - internal-dns/internal-core-dns.yaml
 - cert-manager/helmrepository.yaml

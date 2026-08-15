@@ -22,7 +22,7 @@
     - name: Allow Wireguard
       ufw:
         rule: allow
-        port: 51820
+        port: 31602
         proto: udp
 
     - name: Allow k3s API
