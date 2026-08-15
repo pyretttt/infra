@@ -5,6 +5,19 @@ metadata:
   namespace: flux-system
 spec:
   interval: 2h
+  timeout: 10m
+  install:
+    remediation:
+      retries: 3
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 2m
+  upgrade:
+    remediation:
+      retries: 3
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 2m
   targetNamespace: default
   chart:
     spec:
@@ -47,12 +60,35 @@ spec:
             secretKeyRef:
               name: n8n-secrets
               key: encryption-key
+        # n8n 1.97+ listens on :: by default; kubelet probes the IPv4 pod IP.
+        N8N_LISTEN_ADDRESS:
+          value: "0.0.0.0"
+
+      # Chart 2.0.1 has no startupProbe. Default liveness (no delay, 3x10s)
+      # SIGTERMs n8n before sqlite + vacuum bind :5678 (~30s, exit 143).
+      livenessProbe:
+        httpGet:
+          path: /healthz
+          port: http
+        initialDelaySeconds: 90
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 12
+      readinessProbe:
+        httpGet:
+          path: /healthz
+          port: http
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 12
 
       config:
         db:
           type: sqlite
           sqlite:
-            vacuum_on_startup: true
+            # Vacuum on every start plus default liveness (~30s) caused CrashLoopBackOff.
+            vacuum_on_startup: false
         executions:
           data:
             prune: true
