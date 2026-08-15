@@ -15,7 +15,6 @@ spec:
         namespace: flux-system
       interval: 2h
   releaseName: kube-prometheus-stack
-  # PVCs main-ad1/main-ad2 live in default — claim must be same namespace as pods.
   targetNamespace: default
   install:
     createNamespace: true
@@ -91,13 +90,19 @@ spec:
         existingSecret: grafana-admin
         userKey: admin-user
         passwordKey: admin-password
-      nodeSelector:
-        name: k8s-cluster-pool-0
+      # Recreate: RWO local-path cannot attach to two pods during RollingUpdate.
+      deploymentStrategy:
+        type: Recreate
       persistence:
         enabled: true
         type: pvc
-        existingClaim: main-ad1
-        subPath: grafana
+        storageClassName: local-path
+        accessModes:
+          - ReadWriteOnce
+        size: 5Gi
+        # Keep the PVC if the HelmRelease is removed; pod restarts never delete it.
+        annotations:
+          helm.sh/resource-policy: keep
       ingress:
         enabled: true
         ingressClassName: nginx-internal
@@ -135,24 +140,23 @@ spec:
       prometheusSpec:
         replicas: 1
         retention: 48h
-        retentionSize: 20GB
+        # Must stay below the PVC request; local-path does not enforce quota.
+        retentionSize: 4GB
         scrapeInterval: 30s
         evaluationInterval: 30s
-        nodeSelector:
-          name: k8s-cluster-pool-0
-        # Existing PVC: do NOT set additionalArgs.storage.tsdb.path — operator already
-        # manages that flag and refuses to reconcile (no StatefulSet → Ingress 503).
-        # Patch the prometheus container mount at /prometheus onto main-ad1 instead.
-        volumes:
-          - name: prometheus-data
-            persistentVolumeClaim:
-              claimName: main-ad1
-        containers:
-          - name: prometheus
-            volumeMounts:
-              - name: prometheus-data
-                mountPath: /prometheus
-                subPath: prometheus
+        # StatefulSet default is Retain; set explicitly so scale/delete keep the claim.
+        persistentVolumeClaimRetentionPolicy:
+          whenDeleted: Retain
+          whenScaled: Retain
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: local-path
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 5Gi
         resources:
           requests:
             cpu: 50m

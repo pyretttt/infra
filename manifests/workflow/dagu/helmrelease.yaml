@@ -17,8 +17,6 @@ spec:
       interval: 2h
   values:
     deploymentMode: standalone
-    nodeSelector:
-      name: k8s-cluster-pool-1
     config:
       publicUrl: "http://dagu.polywhale.com"
     ui:
@@ -43,4 +41,8 @@ spec:
         usernameKey: username
         passwordKey: password
     persistence:
-      existingClaim: main-ad2
+      enabled: true
+      retain: true
+      accessMode: ReadWriteOnce
+      size: 10Gi
+      storageClass: local-path
