@@ -1,26 +1,39 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-gateway-internal
+  name: ingress-gateway-internal-one
   namespace: default
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-strip-one-internal@kubernetescrd
 spec:
   ingressClassName: traefik-internal
   rules:
     - http:
         paths:
-        - path: /one
-          pathType: Prefix
-          backend:
-            service:
-              name: static-nginx-service-1
-              port:
-                number: 80
+          - path: /one
+            pathType: Prefix
+            backend:
+              service:
+                name: static-nginx-service-1
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-gateway-internal-two
+  namespace: default
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-strip-two-internal@kubernetescrd
+spec:
+  ingressClassName: traefik-internal
+  rules:
     - http:
         paths:
-        - path: /two
-          pathType: Prefix
-          backend:
-            service:
-              name: static-nginx-service-2
-              port:
-                number: 80
+          - path: /two
+            pathType: Prefix
+            backend:
+              service:
+                name: static-nginx-service-2
+                port:
+                  number: 80

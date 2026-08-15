@@ -19,6 +19,12 @@
         proto: tcp
       loop: ["80", "443"]
 
+    - name: Allow Wireguard
+      ufw:
+        rule: allow
+        port: 51820
+        proto: udp
+
     - name: Allow k3s API
       ufw:
         rule: allow

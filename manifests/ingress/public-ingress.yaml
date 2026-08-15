@@ -1,16 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-gateway
+  name: ingress-gateway-one
   namespace: default
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    external-dns.alpha.kubernetes.io/target: "139.185.61.92"
+    external-dns.alpha.kubernetes.io/target: 69.30.204.214
+    traefik.ingress.kubernetes.io/router.middlewares: default-strip-one@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:
-    - hosts: [test.polywhale.cc, polywhale.cc]
-      secretName: polywhale-cc-tls
+    - hosts: [test.polywhale.cc]
+      secretName: test-polywhale-cc-tls
   rules:
     - host: test.polywhale.cc
       http:
@@ -22,6 +23,22 @@ spec:
                 name: static-nginx-service-1
                 port:
                   number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-gateway-two
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    external-dns.alpha.kubernetes.io/target: 69.30.204.214
+    traefik.ingress.kubernetes.io/router.middlewares: default-strip-two@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts: [polywhale.cc]
+      secretName: polywhale-cc-tls
+  rules:
     - host: polywhale.cc
       http:
         paths:

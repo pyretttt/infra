@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
 # Internal ingress is not used in this cluster yet
 # - internal-ingress.yaml
+- middleware.yaml
 - public-ingress.yaml

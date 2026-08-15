@@ -7,8 +7,8 @@ resources:
 - traefik-ingress-controller/helmrelease.yaml
 # - provisioned/ingress/ingress-node-port.yaml
 # - provisioned/storage/storage-access.yaml
-# - nginx-1/static-nginx.yaml
-# - nginx-2/static-nginx.yaml
+- nginx-1/static-nginx.yaml
+- nginx-2/static-nginx.yaml
 - wg/deployment.yaml
 - wg/wg-config.yaml
 - internal-dns/internal-core-dns.yaml

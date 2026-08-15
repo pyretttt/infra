@@ -135,7 +135,7 @@ metadata:
   namespace: internal-dns
 spec:
   type: ClusterIP
-  clusterIP: 10.96.123.47
+  clusterIP: 10.43.0.47
   selector:
     app: internal-coredns
   ports:
