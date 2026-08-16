@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-user
+  namespace: flux-system
+data:
+  username: ${POSTGRES_USER}

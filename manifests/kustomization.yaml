@@ -27,7 +27,4 @@ resources:
 - workflow/n8n/helmrepo.yaml
 - workflow/n8n/helmrelease.yaml
 - workflow/n8n/n8n-secret.yaml
-- postgres/helmrepo.yaml
-- postgres/helmrelease.yaml
-- postgres/postgres-secret.yaml
 

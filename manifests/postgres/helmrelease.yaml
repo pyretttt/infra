@@ -28,6 +28,13 @@ spec:
         name: postgresql
         namespace: flux-system
       interval: 2h
+  # Same namespace as this HelmRelease (CRD has no valuesFrom.namespace).
+  valuesFrom:
+    - kind: ConfigMap
+      name: postgres-user
+      valuesKey: username
+      targetPath: auth.username
+      literal: true
   values:
     fullnameOverride: postgres
 
@@ -37,7 +44,6 @@ spec:
       tag: latest
 
     auth:
-      username: user
       existingSecret: postgres-auth
       secretKeys:
         adminPasswordKey: admin-password
@@ -46,6 +52,13 @@ spec:
     architecture: standalone
 
     primary:
+      # .sql is executed by Bitnami with the app role password. A .sh that calls
+      # psql does not get PGPASSWORD and fails on md5 local auth.
+      initdb:
+        scripts:
+          01-create-windmill.sql: |
+            SELECT 'CREATE DATABASE windmill'
+            WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'windmill')\gexec
       persistence:
         enabled: true
         storageClass: local-path

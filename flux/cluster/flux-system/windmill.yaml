@@ -1,0 +1,16 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: windmill
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 20m
+  path: ./manifests/workflow/windmill
+  prune: true
+  # postgres Kustomization is Ready only after its HelmRelease healthCheck passes.
+  dependsOn:
+    - name: postgres
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

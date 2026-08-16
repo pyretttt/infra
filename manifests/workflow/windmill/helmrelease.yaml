@@ -28,4 +28,74 @@ spec:
         name: windmill
         namespace: flux-system
       interval: 2h
-  values
+  values:
+    postgresql:
+      enabled: false
+    minio:
+      enabled: false
+    enterprise:
+      enabled: false
+
+    ingress:
+      enabled: true
+      className: traefik-internal
+      tls: []
+
+    windmill:
+      image: ghcr.io/windmill-labs/windmill
+      tag: "1.790.0"
+      imagePullPolicy: IfNotPresent
+
+      appReplicas: 1
+      extraReplicas: 0
+      baseDomain: windmill.polywhale.com
+      baseProtocol: http
+
+      # User/password come from postgres-auth via extraEnv; kubelet expands $(...).
+      databaseUrl: postgres://$(DATABASE_USER):$(DATABASE_PASSWORD)@postgres.default.svc.cluster.local:5432/windmill?sslmode=disable
+
+      indexer:
+        enabled: false
+
+      # One default worker. Listing only this group drops the chart's native/gpu workers.
+      workerGroups:
+        - name: default
+          replicas: 1
+          extraEnv:
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: username
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: postgres-password
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1536Mi
+            limits:
+              cpu: "1000m"
+              memory: 1536Mi
+
+      app:
+        extraEnv:
+          - name: DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgres-auth
+                key: username
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-auth
+                key: postgres-password
+        resources:
+          requests:
+            cpu: 150m
+            memory: 768Mi
+          limits:
+            cpu: 500m
+            memory: 768Mi
