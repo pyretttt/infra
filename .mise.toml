@@ -69,6 +69,16 @@ echo "Username: ${DAGU_USER}"
 echo "Password: ${DAGU_PASS}"
 """
 
+[tasks."get-postgres-creds"]
+description = "Outputs postgres credentials into stdin"
+run = """
+POSTGRES_PASS=$(kubectl get secret postgres-auth -n default -o jsonpath="{.data.postgres-password}" | base64 -d)
+echo "Username: postgres"
+echo "Password: ${POSTGRES_PASS}"
+echo "Host: postgres.default.svc.cluster.local"
+echo "Port: 5432"
+"""
+
 # ============  Ansible  =============
 [tasks."ansible:configure-all"]
 description = "Runs full configuration of vps"
@@ -177,6 +187,24 @@ sed -e 's|${N8N_ENCRYPTION_KEY}|'"${N8N_ENCRYPTION_KEY}"'|g' \
 mise run age:encrypt --file manifests/workflow/n8n/n8n-secret.yaml
 """
 
+[tasks."render:postgres-secret"]
+description = "Renders postgres secret"
+env.POSTGRES_USER_PASSWORD = "{{ env.POSTGRES_PASSWORD | default(value=exec(command='openssl rand -base64 16')) }}"
+env.POSTGRES_ADMIN_PASSWORD = "{{ env.POSTGRES_ADMIN_PASSWORD | default(value=exec(command='openssl rand -base64 16')) }}"
+
+
+run = """
+if [ -f manifests/postgres/postgres-secret.yaml ]; then
+  echo "Credentials already exists"
+  exit 0
+fi
+sed -e 's|${POSTGRES_USER_PASSWORD}|'"${POSTGRES_USER_PASSWORD}"'|g' \
+    -e 's|${POSTGRES_ADMIN_PASSWORD}|'"${POSTGRES_ADMIN_PASSWORD}"'|g' \
+  manifests/postgres/postgres-secret.yaml.tmpl > manifests/postgres/postgres-secret.yaml
+
+mise run age:encrypt --file manifests/postgres/postgres-secret.yaml
+"""
+
 [tasks."render:all"]
 description = "Renders all templates"
 run = [
@@ -184,7 +212,8 @@ run = [
     { task = "render:wg-config" },
     { task = "render:grafana-secret" },
     { task = "render:dagu-secret" },
-    { task = "render:n8n-secret" }
+    { task = "render:n8n-secret" },
+    { task = "render:postgres-secret" }
 ]
 
 # ============  Flux  =============

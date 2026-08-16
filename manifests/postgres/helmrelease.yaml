@@ -1,0 +1,68 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: postgres
+  namespace: flux-system
+spec:
+  interval: 2h
+  timeout: 10m
+  install:
+    remediation:
+      retries: 3
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 2m
+  upgrade:
+    remediation:
+      retries: 3
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 2m
+  targetNamespace: default
+  chart:
+    spec:
+      chart: postgresql
+      version: "18.8.9"
+      sourceRef:
+        kind: HelmRepository
+        name: postgresql
+        namespace: flux-system
+      interval: 2h
+  values:
+    fullnameOverride: postgres
+
+    image:
+      registry: docker.io
+      repository: bitnami/postgresql
+      tag: latest
+
+    auth:
+      username: user
+      existingSecret: postgres-auth
+      secretKeys:
+        adminPasswordKey: admin-password
+        userPasswordKey: postgres-password
+
+    architecture: standalone
+
+    primary:
+      persistence:
+        enabled: true
+        storageClass: local-path
+        accessModes:
+          - ReadWriteOnce
+        size: 10Gi
+        # Keep the PVC if the HelmRelease is removed; pod restarts never delete it.
+        annotations:
+          helm.sh/resource-policy: keep
+      persistentVolumeClaimRetentionPolicy:
+        enabled: true
+        whenDeleted: Retain
+        whenScaled: Retain
+      resources:
+        requests:
+          cpu: 50m
+          memory: 768Mi
+        limits:
+          cpu: 500m
+          memory: 768Mi
