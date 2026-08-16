@@ -63,15 +63,12 @@ spec:
           replicas: 1
           extraEnv:
             - name: DATABASE_USER
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-auth
-                  key: username
+              value: postgres
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgres-auth
-                  key: postgres-password
+                  key: admin-password
           resources:
             requests:
               cpu: 250m
@@ -83,15 +80,12 @@ spec:
       app:
         extraEnv:
           - name: DATABASE_USER
-            valueFrom:
-              secretKeyRef:
-                name: postgres-auth
-                key: username
+            value: postgres
           - name: DATABASE_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: postgres-auth
-                key: postgres-password
+                key: admin-password
         resources:
           requests:
             cpu: 150m

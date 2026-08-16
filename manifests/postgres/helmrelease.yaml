@@ -44,6 +44,7 @@ spec:
       tag: latest
 
     auth:
+      enablePostgresUser: true
       existingSecret: postgres-auth
       secretKeys:
         adminPasswordKey: admin-password
