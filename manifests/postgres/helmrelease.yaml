@@ -57,9 +57,9 @@ spec:
       # psql does not get PGPASSWORD and fails on md5 local auth.
       initdb:
         scripts:
-          01-create-windmill.sql: |
-            SELECT 'CREATE DATABASE windmill'
-            WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'windmill')\gexec
+          01-create-n8n.sql: |
+            SELECT 'CREATE DATABASE n8n'
+            WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'n8n')\gexec
       persistence:
         enabled: true
         storageClass: local-path

@@ -8,10 +8,14 @@ sops = "latest"
 terraform = "latest"
 # additionally openssl
 # additionally ansible
+# additionally htpasswd
 
 [env]
 KUBECONFIG = "databasemart/.kube.config"
 VPS_IP = "69.30.204.214"
+N8N_INSTANCE_OWNER_EMAIL = "bob@bobby.com"
+N8N_INSTANCE_OWNER_FIRST_NAME = "bob"
+N8N_INSTANCE_OWNER_LAST_NAME = "bobby"
 
 [tasks."k9s"]
 description = "runs k9s with provisioned cluster config"
@@ -177,13 +181,21 @@ mise run age:encrypt --file manifests/workflow/dagu/dagu-secret.yaml
 [tasks."render:n8n-secret"]
 description = "Renders n8n secret"
 env.N8N_ENCRYPTION_KEY = "{{ env.N8N_ENCRYPTION_KEY | default(value=exec(command='openssl rand -hex 32')) }}"
+env.PASSWORD = { required = true }
 
 run = """
 if [ -f manifests/workflow/n8n/n8n-secret.yaml ]; then
   echo "Secret already exists"
   exit 0
 fi
+
+N8N_INSTANCE_OWNER_PASSWORD_HASH=$(htpasswd -bnBC 12 "" "${PASSWORD}" | tr -d ':\n')
+
 sed -e 's|${N8N_ENCRYPTION_KEY}|'"${N8N_ENCRYPTION_KEY}"'|g' \
+    -e 's|${N8N_INSTANCE_OWNER_EMAIL}|'"${N8N_INSTANCE_OWNER_EMAIL}"'|g' \
+    -e 's|${N8N_INSTANCE_OWNER_FIRST_NAME}|'"${N8N_INSTANCE_OWNER_FIRST_NAME}"'|g' \
+    -e 's|${N8N_INSTANCE_OWNER_LAST_NAME}|'"${N8N_INSTANCE_OWNER_LAST_NAME}"'|g' \
+    -e 's|${N8N_INSTANCE_OWNER_PASSWORD_HASH}|'"${N8N_INSTANCE_OWNER_PASSWORD_HASH}"'|g' \
   manifests/workflow/n8n/n8n-secret.yaml.tmpl > manifests/workflow/n8n/n8n-secret.yaml
 
 mise run age:encrypt --file manifests/workflow/n8n/n8n-secret.yaml

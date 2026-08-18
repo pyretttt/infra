@@ -44,14 +44,6 @@ spec:
               pathType: Prefix
       tls: []
 
-    # Queue/worker mode needs Valkey/Redis — keep off for sqlite single-process.
-    # worker:
-    #   enabled: true
-    # webhook:
-    #   enabled: true
-    # valkey:
-    #   enabled: true
-
     main:
       # Chart expects a map (env name → EnvVar fields), not a list.
       extraEnv:
@@ -63,6 +55,35 @@ spec:
         # n8n 1.97+ listens on :: by default; kubelet probes the IPv4 pod IP.
         N8N_LISTEN_ADDRESS:
           value: "0.0.0.0"
+        DB_POSTGRESDB_USER:
+          value: postgres
+        DB_POSTGRESDB_PASSWORD:
+          valueFrom:
+            secretKeyRef:
+              name: postgres-auth
+              key: admin-password
+        N8N_INSTANCE_OWNER_MANAGED_BY_ENV:
+          value: "true"
+        N8N_INSTANCE_OWNER_EMAIL:
+          valueFrom:
+            secretKeyRef:
+              name: n8n-secrets
+              key: instance-owner-email
+        N8N_INSTANCE_OWNER_FIRST_NAME:
+          valueFrom:
+            secretKeyRef:
+              name: n8n-secrets
+              key: instance-owner-first-name
+        N8N_INSTANCE_OWNER_LAST_NAME:
+          valueFrom:
+            secretKeyRef:
+              name: n8n-secrets
+              key: instance-owner-last-name
+        N8N_INSTANCE_OWNER_PASSWORD_HASH:
+          valueFrom:
+            secretKeyRef:
+              name: n8n-secrets
+              key: instance-owner-password-hash
 
       # Chart 2.0.1 has no startupProbe. Default liveness (no delay, 3x10s)
       # SIGTERMs n8n before sqlite + vacuum bind :5678 (~30s, exit 143).
@@ -85,10 +106,16 @@ spec:
 
       config:
         db:
-          type: sqlite
-          sqlite:
-            # Vacuum on every start plus default liveness (~30s) caused CrashLoopBackOff.
-            vacuum_on_startup: false
+          type: postgresdb
+          ping:
+            interval:
+              seconds: 10
+
+          postgresdb:
+            host: postgres
+            database: n8n
+            port: 5432
+
         executions:
           data:
             prune: true
