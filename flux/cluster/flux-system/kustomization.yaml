@@ -8,6 +8,7 @@ resources:
 - ingress.yaml
 - postgres.yaml
 # - windmill.yaml
+- n8n.yaml
 patches:
   - target:
       kind: Deployment
