@@ -7,9 +7,7 @@ resources:
 - cert-issuers.yaml
 - ingress.yaml
 - postgres.yaml
-- windmill.yaml
-# Always Free: default Flux requests (50–100m × 4) crowd node request budgets.
-# Patch here (not gotk-components.yaml) so flux bootstrap upgrades keep the tweak.
+# - windmill.yaml
 patches:
   - target:
       kind: Deployment
