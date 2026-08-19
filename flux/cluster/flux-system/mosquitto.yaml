@@ -1,0 +1,28 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: mosquitto-source
+  namespace: flux-system
+spec:
+  interval: 5m
+  url: ssh://git@github.com/pyretttt/mosquitto
+  ref:
+    branch: main
+  secretRef:
+    name: flux-system
+  sparseCheckout:
+    - ./polywhale/manifests
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: polywhale-manifests
+  namespace: flux-system
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: ./polywhale/manifests/polywhale
+      sourceRef:
+        kind: GitRepository
+        name: mosquitto-source

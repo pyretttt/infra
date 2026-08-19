@@ -9,6 +9,7 @@ resources:
 - postgres.yaml
 # - windmill.yaml
 - n8n.yaml
+- mosquitto.yaml
 patches:
   - target:
       kind: Deployment
