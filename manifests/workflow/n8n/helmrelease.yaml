@@ -145,10 +145,10 @@ spec:
 
       resources:
         requests:
-          cpu: 50m
+          cpu: 250m
           memory: 512Mi
         limits:
-          cpu: 500m
+          cpu: 1000m
           # Options: 768Mi if tighter; avoid ≥2Gi on this node.
           memory: 2048Mi
 

@@ -75,7 +75,7 @@ spec:
         whenScaled: Retain
       resources:
         requests:
-          cpu: 50m
+          cpu: 250m
           memory: 768Mi
         limits:
           cpu: 500m
