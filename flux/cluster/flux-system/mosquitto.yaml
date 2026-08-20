@@ -16,9 +16,10 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: polywhale-manifests
+  name: polywhale
   namespace: flux-system
 spec:
+  targetNamespace: default
   interval: 10m
   chart:
     spec:
