@@ -7,7 +7,7 @@ resources:
 - cert-issuers.yaml
 - ingress.yaml
 - postgres.yaml
-# - windmill.yaml
+## - windmill.yaml
 - n8n.yaml
 - mosquitto.yaml
 patches:
