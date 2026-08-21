@@ -9,6 +9,7 @@ terraform = "latest"
 # additionally openssl
 # additionally ansible
 # additionally htpasswd
+# python3
 
 [env]
 KUBECONFIG = "databasemart/.kube.config"
@@ -206,8 +207,6 @@ description = "Renders postgres secret"
 env.POSTGRES_USER = "{{ env.POSTGRES_USER | default(value='user') }}"
 env.POSTGRES_USER_PASSWORD = "{{ env.POSTGRES_PASSWORD | default(value=exec(command='openssl rand -base64 16')) }}"
 env.POSTGRES_ADMIN_PASSWORD = "{{ env.POSTGRES_ADMIN_PASSWORD | default(value=exec(command='openssl rand -base64 16')) }}"
-
-
 run = """
 sed -e 's|${POSTGRES_USER}|'"${POSTGRES_USER}"'|g' \
   manifests/postgres/postgres-user.yaml.tmpl > manifests/postgres/postgres-user.yaml
@@ -224,6 +223,41 @@ sed -e 's|${POSTGRES_USER}|'"${POSTGRES_USER}"'|g' \
 mise run age:encrypt --file manifests/postgres/postgres-secret.yaml
 """
 
+[tasks."render:s3-rclone-secret"]
+description = "Renders s3-rclone secret for backup management"
+env.S3_RCLONE_CONFIG = "{{ env.S3_RCLONE_CONFIG | default(value='${HOME}/.config/rclone/rclone.conf') }}"
+run = """
+if [ -f manifests/s3_rclone_config.yaml ]; then
+  echo "Secret already exists"
+  exit 0
+fi
+
+python3 - <<'PY'
+import os
+from pathlib import Path
+
+raw_path = os.environ["S3_RCLONE_CONFIG"]
+config_path = Path(os.path.expanduser(os.path.expandvars(raw_path)))
+if not config_path.is_file():
+    raise SystemExit(f"rclone config not found at {config_path}")
+
+contents = config_path.read_text()
+if not contents.strip():
+    raise SystemExit(f"rclone config is empty: {config_path}")
+
+tmpl = Path("manifests/s3_rclone_config.yaml.tmpl").read_text()
+indent = "    "
+replacement = ("\\n" + indent).join(contents.splitlines())
+Path("manifests/s3_rclone_config.yaml").write_text(
+    tmpl.replace("${S3_RCLONE_CONFIG}", replacement)
+)
+print(f"Rendered secret from {config_path}")
+PY
+
+mise run age:encrypt --file manifests/s3_rclone_config.yaml
+"""
+
+
 [tasks."render:all"]
 description = "Renders all templates"
 run = [
@@ -232,7 +266,8 @@ run = [
     { task = "render:grafana-secret" },
     { task = "render:dagu-secret" },
     { task = "render:n8n-secret" },
-    { task = "render:postgres-secret" }
+    { task = "render:postgres-secret" },
+    { task = "render:s3-rclone-secret" },
 ]
 
 # ============  Flux  =============

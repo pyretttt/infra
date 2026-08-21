@@ -5,3 +5,4 @@ resources:
 - helmrelease.yaml
 - postgres-secret.yaml
 - postgres-user.yaml
+- backup-crons.yaml

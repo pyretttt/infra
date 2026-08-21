@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: s3-rclone-config
+    namespace: default
+type: Opaque
+stringData:
+    s3-rclone-config: ENC[AES256_GCM,data:npfVPAtZXuzuKI5w26skvToulXihMzFY/Xi+1ume0nPMqwL9VVjLahvH1pBk0qHR6N9j/DeMyrw+jCLmmXVdC4ojZdWN8uiTKUvhlYZ6X63FXzuczyxfOblbbZrPGuZYJOAFWr5EzxZQVHKI74GPVzm2s67PXKRRMIFWnT7/n8Zx7Tu57a8aw12Xxbz/G+pZbbJNjoB1OJ5a0DI3imAiQBhQxmlmUaj42dUwNV2v0jP024jYu6r8LUK9pTJpFpL0qiK+KXjgqr4G5+g+0b1ejG5Jz9RKZDwZFGSi/mi6pdUEFtp6l8eWLRgAEmr62ndP41TFOKZlZjSEbLQq0UW5HOwJUQqu0w==,iv:CM8j0gM9b1y9+eLyY84GKf2KH8eNchyOD0DeKO2s0EI=,tag:LtMuIsQ1TSZlJ/4LfB9QGw==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA5V045bTVFSkl2czR2NEZx
+            bXlOczNucGZiOUc5YTdadGR4cE9IaHI5Nm5jCkRYV2hmbHEvWXJZRWVCUjhqdWRq
+            SjVJOWhnY3VMelViWDdGN0VIWFRyMTgKLS0tIGp1M0JSbGd3amhzNGJUeXFNWStX
+            anl3cXN4RWY0b1YvZzBrbXpGWmxidGsKJuY8VMeOK+UPnOb9WAzkCjNc6oCAhNbQ
+            r5S7GFBqlWZYfMOi/Ad+t9JMIt5jmUvjZxuSDurmRQR2Rn4mJLJiBQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1m9wcxcdm4tkjqd5daaal2kqxutmpu3nxq8zxlry5atjs82n8yvqsq9kga0
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-08-21T15:24:51Z"
+    mac: ENC[AES256_GCM,data:mYNkeJIItKX96xf9FTKS9n5PMjBFZ+hrysa6x+n9WAiT7bPLYs8p0LJ/Zmg8Ny8jZCjJxgI15+Hc9lvDofGdOrtKsywzjWp/+eZLOZClcxFqKu3i4yGNzdePFWf5l2Tpc3ubKFF17YNGs5vHVxStk0mxQFeqjQKfCmPEbIuvLss=,iv:DZGjcgjVIbDX0TRE9OSE9CdJSHOWBe2UtZkxNjjwXXs=,tag:GpcS74LBpx7hKxIh2BiyZQ==,type:str]
+    version: 3.13.3

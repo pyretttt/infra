@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: default
+spec:
+  schedule: "0 0 * * *" # daily
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400 # 24 hours
+      backoffLimit: 3
+      template:
+        spec:
+          restartPolicy: OnFailure
+          initContainers:
+            - name: dump
+              image: postgres:alpine
+              imagePullPolicy: IfNotPresent
+              command:
+                - sh
+                - -c
+                - |
+                  set -euo pipefail
+                  export PGPASSWORD="${POSTGRES_PASSWORD}"
+                  pg_dump -h postgres -U postgres -p 5432 -F c -b -v -f /backup/n8n.backup n8n
+                  chmod 644 /backup/n8n.backup
+              env:
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-auth
+                      key: admin-password
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          containers:
+            - name: upload
+              image: rclone/rclone:sha-722737f
+              args:
+                - copy
+                - /backup/n8n.backup
+                - r2:backups/
+              volumeMounts:
+              - name: backup
+                mountPath: /backup
+                readOnly: true
+              - name: rclone-config
+                mountPath: /config/rclone
+                readOnly: true
+          volumes:
+            - name: backup
+              emptyDir: {}
+            - name: rclone-config
+              secret:
+                secretName: s3-rclone-config
+                items:
+                  - key: s3-rclone-config
+                    path: rclone.conf
