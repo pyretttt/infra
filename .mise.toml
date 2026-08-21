@@ -86,6 +86,14 @@ echo "Port: 5432"
 echo "Database: windmill"
 """
 
+[tasks."restore-postgres-db"]
+description = "Restores postgres database from S3 storage files"
+env.DATABASE_NAME = { required = true }
+run = """
+JOB=$(sed -e 's|${DATABASE_NAME}|'"${DATABASE_NAME}"'|g' manifests/postgres/backup-restore.yaml.tmpl)
+echo "${JOB}" | kubectl apply -f -
+"""
+
 # ============  Ansible  =============
 [tasks."ansible:configure-all"]
 description = "Runs full configuration of vps"
@@ -256,7 +264,6 @@ PY
 
 mise run age:encrypt --file manifests/s3_rclone_config.yaml
 """
-
 
 [tasks."render:all"]
 description = "Renders all templates"

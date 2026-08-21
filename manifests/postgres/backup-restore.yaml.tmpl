@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-restore-backup-${DATABASE_NAME}
+  namespace: default
+spec:
+  ttlSecondsAfterFinished: 86400
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        - name: download-backup
+          image: rclone/rclone:sha-722737f
+          args:
+            - copy
+            - r2:backups/${DATABASE_NAME}.backup
+            - /backup/
+          volumeMounts:
+            - name: backup
+              mountPath: /backup
+            - name: rclone-config
+              mountPath: /config/rclone
+              readOnly: true
+      containers:
+        - name: restore-backup
+          image: postgres:alpine
+          command:
+            - sh
+            - -c
+            - |
+              set -euo pipefail
+              export PGPASSWORD="${POSTGRES_PASSWORD}"
+              pg_restore -h postgres -U postgres -p 5432 -d ${DATABASE_NAME} --clean --if-exists -v /backup/${DATABASE_NAME}.backup
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: admin-password
+          volumeMounts:
+            - name: backup
+              mountPath: /backup
+              readOnly: true
+      volumes:
+        - name: backup
+          emptyDir: {}
+        - name: rclone-config
+          secret:
+            secretName: s3-rclone-config
+            items:
+              - key: s3-rclone-config
+                path: rclone.conf

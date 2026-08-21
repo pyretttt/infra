@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: postgres-backup
+  name: postgres-backup-n8n
   namespace: default
 spec:
   schedule: "0 0 * * *" # daily
