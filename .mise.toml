@@ -74,7 +74,8 @@ echo "Username: ${DAGU_USER}"
 echo "Password: ${DAGU_PASS}"
 """
 
-[tasks."get-postgres-creds"]
+# ============  Postgres  =============
+[tasks."pq:get-postgres-creds"]
 description = "Outputs postgres credentials into stdin"
 run = """
 POSTGRES_USER=$(kubectl get secret postgres-auth -n default -o jsonpath="{.data.username}" | base64 -d)
@@ -86,12 +87,13 @@ echo "Port: 5432"
 echo "Database: windmill"
 """
 
-[tasks."restore-postgres-db"]
+[tasks."pq:restore-postgres-db"]
 description = "Restores postgres database from S3 storage files"
 usage = '''
 flag "--db <db>" help="Database to restore" {
   choices "n8n" "polywhale"
 }
+
 '''
 run = """
 JOB=$(sed -e 's|${DATABASE_NAME}|'"${usage_db}"'|g' manifests/postgres/backup-restore.yaml.tmpl)
@@ -353,6 +355,38 @@ kubectl run debug-pvc --rm -it --restart=Never --image=busybox --overrides="$(ca
     ],
     "volumes": [
       { "name": "target-pvc-volume", "persistentVolumeClaim": { "claimName": "${usage_claim_name:?}" } }
+    ]
+  }
+}
+EOF
+)"
+"""
+
+[tasks."debug:postgres"]
+description = "Attaches to postgres host"
+run = """
+kubectl run debug-pq --rm -it --restart=Never --namespace=default --image=postgres:alpine --overrides="$(cat <<EOF
+{
+  "spec": {
+    "containers": [
+      {
+        "name": "debug-pq",
+        "image": "postgres:alpine",
+        "command": ["psql", "-h", "postgres", "-U", "postgres"],
+        "stdin": true,
+        "tty": true,
+        "env": [
+          {
+            "name": "PGPASSWORD",
+            "valueFrom": {
+              "secretKeyRef": {
+                "name": "postgres-auth",
+                "key": "admin-password"
+              }
+            }
+          }
+        ]
+      }
     ]
   }
 }
