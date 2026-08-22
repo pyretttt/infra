@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${JOB_NAME}
+  namespace: default
+spec:
+  ttlSecondsAfterFinished: 86400
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: postgres-psql
+          image: postgres:alpine
+          command:
+            - sh
+            - -c
+            - |
+              set -euo pipefail
+              export PGPASSWORD="${POSTGRES_PASSWORD}"
+              printf '%s' "$PSQL_COMMAND_B64" | base64 -d | psql -h postgres -U postgres -p 5432 -d "$DATABASE_NAME" -v ON_ERROR_STOP=1
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: admin-password
+            - name: DATABASE_NAME
+              value: "${DATABASE_NAME}"
+            - name: PSQL_COMMAND_B64
+              value: "${PSQL_COMMAND_B64}"

@@ -87,18 +87,59 @@ echo "Port: 5432"
 echo "Database: windmill"
 """
 
-[tasks."pq:restore-postgres-db"]
+[tasks."pg:restore-postgres-db"]
 description = "Restores postgres database from S3 storage files"
 usage = '''
 flag "--db <db>" help="Database to restore" {
   choices "n8n" "polywhale"
 }
-
 '''
 run = """
 JOB=$(sed -e 's|${DATABASE_NAME}|'"${usage_db}"'|g' manifests/postgres/backup-restore.yaml.tmpl)
 echo "${JOB}" | kubectl apply -f -
 """
+
+[tasks."pg:run-job"]
+description = "Runs sql statements"
+usage = '''
+flag "--sql <sql>" help="SQL instructions" {
+  required #true
+}
+flag "--db <db>" help="Database where instructions are executed" {
+  required #true
+}
+'''
+run = """
+: "${usage_sql:?--sql is required}"
+: "${usage_db:?--db is required}"
+JOB_NAME="postgres-psql-$(date +%Y%m%d%H%M%S)-$(openssl rand -hex 3)"
+PSQL_COMMAND_B64=$(printf '%s' "${usage_sql}" | openssl base64 -A)
+JOB=$(sed \
+  -e 's|${JOB_NAME}|'"${JOB_NAME}"'|g' \
+  -e 's|${DATABASE_NAME}|'"${usage_db}"'|g' \
+  -e 's|${PSQL_COMMAND_B64}|'"${PSQL_COMMAND_B64}"'|g' \
+  manifests/postgres/psql-job.yaml.tmpl)
+echo "${JOB}" | kubectl apply -f -
+"""
+
+[tasks."pg:create-json-table"]
+description = "Creates pg json table"
+usage = '''
+flag "--sqlfile <file>" help="File with sql instructions" default="create_json_db.sql"
+flag "--db <db>" help="Database where instructions are executed" {
+  required #true
+}
+flag "--table <table>" help="Table to create" {
+  required #true
+}
+'''
+run = """
+: "${usage_db:?--db is required}"
+: "${usage_table:?--table is required}"
+SQL=$(sed -e 's|${TABLE_NAME}|'"${usage_table}"'|g' "${usage_sqlfile}")
+mise run pg:run-job --sql "${SQL}" --db "${usage_db}"
+"""
+
 
 # ============  Ansible  =============
 [tasks."ansible:configure-all"]
