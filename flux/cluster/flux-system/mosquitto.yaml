@@ -4,7 +4,8 @@ metadata:
   name: mosquitto-source
   namespace: flux-system
 spec:
-  interval: 5m
+  interval: 1h
+  timeout: 5m
   url: ssh://git@github.com/pyretttt/mosquitto
   ref:
     branch: main
@@ -19,11 +20,20 @@ metadata:
   name: polywhale
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: postgres
   targetNamespace: default
-  interval: 10m
+  interval: 1hm
   chart:
     spec:
       chart: ./polywhale/manifests/polywhale
       sourceRef:
         kind: GitRepository
         name: mosquitto-source
+  values:
+    db:
+      host: postgres
+      name: polywhale
+      user: postgres
+      existingSecret: postgres-auth
+      existingSecretKey: admin-password
