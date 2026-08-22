@@ -88,9 +88,13 @@ echo "Database: windmill"
 
 [tasks."restore-postgres-db"]
 description = "Restores postgres database from S3 storage files"
-env.DATABASE_NAME = { required = true }
+usage = '''
+flag "--db <db>" help="Database to restore" {
+  choices "n8n" "polywhale"
+}
+'''
 run = """
-JOB=$(sed -e 's|${DATABASE_NAME}|'"${DATABASE_NAME}"'|g' manifests/postgres/backup-restore.yaml.tmpl)
+JOB=$(sed -e 's|${DATABASE_NAME}|'"${usage_db}"'|g' manifests/postgres/backup-restore.yaml.tmpl)
 echo "${JOB}" | kubectl apply -f -
 """
 
@@ -332,7 +336,6 @@ sops --age=$(cat age_public_key) \
 description = "Mount a PVC in an interactive busybox pod for inspection"
 usage = '''
 flag "--claim-name <claim_name>" help="PVC to debug"
-flag "--node-selector <node_selector>" help="Node name label value (e.g. k8s-cluster-pool-0)"
 '''
 run = """
 kubectl run debug-pvc --rm -it --restart=Never --image=busybox --overrides="$(cat <<EOF
@@ -348,9 +351,6 @@ kubectl run debug-pvc --rm -it --restart=Never --image=busybox --overrides="$(ca
         "volumeMounts": [{ "mountPath": "/pvc-mount", "name": "target-pvc-volume" }]
       }
     ],
-    "nodeSelector": {
-      "name": "${usage_node_selector:?}"
-    },
     "volumes": [
       { "name": "target-pvc-volume", "persistentVolumeClaim": { "claimName": "${usage_claim_name:?}" } }
     ]
