@@ -23,10 +23,11 @@ spec:
   dependsOn:
     - name: postgres
   targetNamespace: default
-  interval: 1hm
+  interval: 1m
   chart:
     spec:
       chart: ./polywhale/manifests/polywhale
+      reconcileStrategy: Revision
       sourceRef:
         kind: GitRepository
         name: mosquitto-source
