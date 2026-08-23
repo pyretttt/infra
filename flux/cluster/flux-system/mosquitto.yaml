@@ -13,27 +13,27 @@ spec:
     name: flux-system
   sparseCheckout:
     - ./polywhale/manifests
-# ---
-# apiVersion: helm.toolkit.fluxcd.io/v2
-# kind: HelmRelease
-# metadata:
-#   name: polywhale
-#   namespace: flux-system
-# spec:
-#   dependsOn:
-#     - name: postgres
-#   targetNamespace: default
-#   interval: 1hm
-#   chart:
-#     spec:
-#       chart: ./polywhale/manifests/polywhale
-#       sourceRef:
-#         kind: GitRepository
-#         name: mosquitto-source
-#   values:
-#     db:
-#       host: postgres
-#       name: polywhale
-#       user: postgres
-#       existingSecret: postgres-auth
-#       existingSecretKey: admin-password
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: polywhale
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: postgres
+  targetNamespace: default
+  interval: 1hm
+  chart:
+    spec:
+      chart: ./polywhale/manifests/polywhale
+      sourceRef:
+        kind: GitRepository
+        name: mosquitto-source
+  values:
+    db:
+      host: postgres
+      name: polywhale
+      user: postgres
+      existingSecret: postgres-auth
+      existingSecretKey: admin-password
