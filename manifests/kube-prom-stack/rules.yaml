@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-restarts
+  namespace: default
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: pod-restarts
+      interval: 60s
+      rules:
+        - record: namespace_pod_container:restarts:increase15m
+          expr: |
+            sum by (namespace, pod, container) (
+              increase(kube_pod_container_status_restarts_total[10m])
+            )
+        - alert: PodRestartingOnError
+          expr: |
+            namespace_pod_container:restarts:increase15m > 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }}/{{ $labels.pod }} restarting (Error)"

@@ -21,6 +21,7 @@ resources:
 - kube-prom-stack/helmrepository.yaml
 - kube-prom-stack/helmrelease.yaml
 - kube-prom-stack/grafana-secret.yaml
+- kube-prom-stack/rules.yaml
 - s3_rclone_config.yaml
 # - workflow/dagu/helmrepo.yaml
 # - workflow/dagu/helmrelease.yaml
