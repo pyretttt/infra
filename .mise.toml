@@ -217,6 +217,23 @@ sed -e 's|${GRAFANA_USER}|'"${GRAFANA_USER}"'|g' \
 mise run age:encrypt --file manifests/kube-prom-stack/grafana-secret.yaml
 """
 
+[tasks."render:tg-secret"]
+description = "Renders telegram alertmanager secret"
+env.BOT_TOKEN = { required = true }
+env.CHAT_ID = { required = true }
+
+run = """
+if [ -f manifests/kube-prom-stack/tg-secret.yaml ]; then
+  echo "Credentials already exists"
+  exit 0
+fi
+sed -e 's|${BOT_TOKEN}|'"${BOT_TOKEN}"'|g' \
+    -e 's|${CHAT_ID}|'"${CHAT_ID}"'|g' \
+  manifests/kube-prom-stack/tg-secret.yaml.tmpl > manifests/kube-prom-stack/tg-secret.yaml
+
+mise run age:encrypt --file manifests/kube-prom-stack/tg-secret.yaml
+"""
+
 [tasks."render:dagu-secret"]
 description = "Renders dagu secret"
 env.DAGU_USER = "{{ env.DAGU_USER | default(value='admin') }}"
@@ -318,6 +335,7 @@ run = [
     { task = "render:public-ingress" },
     { task = "render:wg-config" },
     { task = "render:grafana-secret" },
+    { task = "render:tg-secret" },
     { task = "render:dagu-secret" },
     { task = "render:n8n-secret" },
     { task = "render:postgres-secret" },
