@@ -24,3 +24,62 @@ spec:
             notify: telegram
           annotations:
             summary: "{{ $labels.namespace }}/{{ $labels.pod }} restarting (Error)"
+---
+# flux-alerts.yaml - Prometheus alerting rules for Flux CD controller errors
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux-controller-alerts
+  namespace: flux-system
+  labels:
+    app.kubernetes.io/part-of: flux
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: flux-controller-errors
+      rules:
+        # Alert when any Flux reconciliation is failing
+        - alert: FluxReconciliationFailure
+          expr: |
+            gotk_resource_info{ready="False", suspended!="true"} == 1
+          for: 10m
+          labels:
+            namespace: flux-system
+            severity: critical
+            notify: telegram
+          annotations:
+            summary: "Flux reconciliation failure for {{ $labels.customresource_kind }}/{{ $labels.name }}"
+            description: >
+              {{ $labels.customresource_kind }} {{ $labels.exported_namespace }}/{{ $labels.name }}
+              has been failing reconciliation for more than 10 minutes.
+
+        # Alert when reconciliation errors are increasing
+        - alert: FluxReconcileErrorRate
+          expr: |
+            rate(controller_runtime_reconcile_total{namespace="flux-system", result="error"}[5m]) > 0
+          for: 5m
+          labels:
+            namespace: flux-system
+            severity: warning
+            notify: telegram
+          annotations:
+            summary: "Flux controller {{ $labels.controller }} is generating reconcile errors"
+            description: >
+              Controller {{ $labels.controller }} in flux-system namespace
+              has a non-zero reconciliation error rate.
+
+        # Alert when a Flux controller pod is restarting frequently
+        - alert: FluxControllerRestarting
+          expr: |
+            increase(kube_pod_container_status_restarts_total{namespace="flux-system", pod=~".*-controller-.*", container="manager"}[1h]) > 0
+          for: 5m
+          labels:
+            namespace: flux-system
+            severity: warning
+            notify: telegram
+          annotations:
+            summary: "Flux controller pod {{ $labels.pod }} is restarting"
+            description: >
+              Pod {{ $labels.pod }} in flux-system namespace has restarted
+              in the last hour.
