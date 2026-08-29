@@ -10,14 +10,14 @@ spec:
     - name: pod-restarts
       interval: 60s
       rules:
-        - record: namespace_pod_container:restarts:increase15m
+        - record: namespace_pod_container:restarts:increase10m
           expr: |
             sum by (namespace, pod, container) (
               increase(kube_pod_container_status_restarts_total[10m])
             )
         - alert: PodRestartingOnError
           expr: |
-            namespace_pod_container:restarts:increase15m > 1
+            namespace_pod_container:restarts:increase10m > 1
           for: 5m
           labels:
             severity: warning
